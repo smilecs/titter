@@ -27,11 +27,13 @@ public class VideosDownloader {
     FileCache fileCache;
     IVideoDownloadListener iVideoDownloadListener;
     DownloadManager downloadManager;
+    DbUtility db;
 
     public VideosDownloader(Context context){
         this.context = context;
         fileCache = new FileCache(context);
         downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        db = new DbUtility(context);
 
     }
     public void startVideosDownloading(final ArrayList<feedModel> videosList){
@@ -43,23 +45,27 @@ public class VideosDownloader {
                     Log.d(TAG, "started33");
                     final feedModel video = videosList.get(i);
                     String url = video.getURL();
-                    String isVideoDownloaded = Utils.readPreferences(context, video.getURL());
-                    boolean isVideoAvailable = Boolean.valueOf(isVideoDownloaded);
-                    if(!isVideoAvailable){
-                        //downloadfromUrl(url, fileCache.directory(), url, downloadManager);
-                        String downloadPath = downloadVideo(url);
-                        Activity activity = (Activity) context;
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Utils.savePreferences(context, video.getURL());
-                                iVideoDownloadListener.onVideoDownloaded(video);
+                    //downloadfromUrl(url, fileCache.directory(), url, downloadManager);
+                    String downloadPath = downloadVideo(url);
+                   /* Activity activity = (Activity) context;
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Utils.savePreferences(context, video.getURL());
+                            iVideoDownloadListener.onVideoDownloaded(video);
                             }
-                        });
-                    }
-
-
+                        });*/
+                    db.addFeed(video);
                 }
+                Activity activity = (Activity) context;
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Utils.savePreferences(context, video.getURL());
+                        iVideoDownloadListener.onVideoDownloaded();
+                    }
+                });
+
             }
         });
         thread.start();

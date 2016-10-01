@@ -21,6 +21,7 @@ public class Dbhelper extends SQLiteOpenHelper {
                     DataContract.Data._ID + " INTEGER PRIMARY KEY," +
                     DataContract.Data.AVAILABLE+ TEXT_TYPE + COMMA_SEP +
                     DataContract.Data.TYPE+ TEXT_TYPE + COMMA_SEP +
+                    DataContract.Data.TYPE2+ TEXT_TYPE + COMMA_SEP +
                     DataContract.Data.URL+ TEXT_TYPE + COMMA_SEP +
                     DataContract.Data.WEBURL+ TEXT_TYPE + COMMA_SEP +
                     DataContract.Data.TAG + TEXT_TYPE + " )";

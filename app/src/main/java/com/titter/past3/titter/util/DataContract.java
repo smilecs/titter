@@ -13,7 +13,8 @@ public class DataContract {
         public static final String WEBURL = "weburl";
         public static final String TAG = "tag";
         public static final String AVAILABLE = "available";
-        public static final String TYPE = "tamka";
+        public static final String TYPE = "type";
+        public static final String TYPE2 = "tamka";
 
     }
 }

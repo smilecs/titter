@@ -2,6 +2,7 @@ package com.titter.past3.titter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -25,6 +26,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.titter.past3.titter.adapter.FeedsAdapter;
 import com.titter.past3.titter.model.feedModel;
+import com.titter.past3.titter.util.DbUtility;
 import com.titter.past3.titter.util.IVideoDownloadListener;
 import com.titter.past3.titter.util.TitterService;
 import com.titter.past3.titter.util.Utils;
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     volleySingleton volley;
     RequestQueue requestQueue;
     ProgressBar progressBar;
+    DbUtility dbUtility;
     DrawerLayout drawer;
     Context context;
     Button refresh;
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = MainActivity.this;
+        dbUtility = new DbUtility(this);
         volley = volleySingleton.getsInstance();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -93,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
 
 
         requestQueue = volley.getmRequestQueue();
-        Refresh();
+       // Refresh();
         Log.d("tttt", "tttt");
 
 
@@ -131,9 +135,10 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     }
 
     @Override
-    public void onVideoDownloaded(feedModel video) {
+    public void onVideoDownloaded() {
         Log.d("MainActivity", "downloaded");
-    mAdapter.videoPlayerController.handlePlayBack(video);
+    //mAdapter.videoPlayerController.handlePlayBack(video);
+        new LoadData().execute();
     }
 
     @Override
@@ -172,9 +177,6 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                             mode.setViewType(array.getJSONObject(i).getString("Type"));
                             mode.setURL(array.getJSONObject(i).getString("File"));
                             mode.setIndex(String.valueOf(i));
-                            if (mode.getViewType().equals("video")) {
-                                videos.add(mode);
-                            }te
 
                         } catch (Throwable je) {
                             je.printStackTrace();
@@ -184,41 +186,13 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                         model.add(mode);
 
                     }
-                    progressBar.setVisibility(View.GONE);
-                    mAdapter.notifyDataSetChanged();
-                    videosDownloader.startVideosDownloading(videos);
-                    mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                        @Override
-                        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                            super.onScrollStateChanged(recyclerView, newState);
-                            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                                Log.d(TAG, "idle");
-                                LinearLayoutManager layoutManager = ((LinearLayoutManager) recyclerView.getLayoutManager());
-                                int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
-                                int findFirstCompletelyVisibleItemPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
-                                feedModel feed;
-                                if (model != null && model.size() > 0) {
-                                    if (findFirstCompletelyVisibleItemPosition >= 0) {
-                                        feed = model.get(findFirstCompletelyVisibleItemPosition);
-                                        Log.d(TAG, feed.getTag());
-                                        if (feed.getViewType().equals("video")) {
-                                            mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
-                                            mAdapter.videoPlayerController.handlePlayBack(feed);
-                                        }
 
-                                    } else {
-                                        feed = model.get(firstVisiblePosition);
-                                        Log.d(TAG, feed.getTag());
-                                        if (feed.getViewType().equals("video")) {
-                                            mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
-                                            mAdapter.videoPlayerController.handlePlayBack(feed);
-                                        }
-                                    }
-                                }
+                    //progressBar.setVisibility(View.GONE);
+                   // mAdapter.notifyDataSetChanged();
+                    if(array.length() > 0){
+                        videosDownloader.startVideosDownloading(model);
+                    }
 
-                            }
-                        }
-                    });
                 }
                 catch (Exception je){
                     je.printStackTrace();
@@ -237,4 +211,55 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
 
         requestQueue.add(req);
     }
+
+    private class LoadData extends AsyncTask<ArrayList<feedModel>, ArrayList<feedModel>, ArrayList<feedModel>>{
+        @Override
+        protected ArrayList<feedModel> doInBackground(ArrayList<feedModel>... params) {
+            if (dbUtility.readData().size() < 1){
+                Refresh();
+                return null;
+            }
+            return dbUtility.readData();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<feedModel> feedModels) {
+            super.onPostExecute(feedModels);
+            model = feedModels;
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+/*
+    mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                Log.d(TAG, "idle");
+                LinearLayoutManager layoutManager = ((LinearLayoutManager) recyclerView.getLayoutManager());
+                int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
+                int findFirstCompletelyVisibleItemPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
+                feedModel feed;
+                if (model != null && model.size() > 0) {
+                    if (findFirstCompletelyVisibleItemPosition >= 0) {
+                        feed = model.get(findFirstCompletelyVisibleItemPosition);
+                        Log.d(TAG, feed.getTag());
+                        if (feed.getViewType().equals("video")) {
+                            mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
+                            mAdapter.videoPlayerController.handlePlayBack(feed);
+                        }
+
+                    } else {
+                        feed = model.get(firstVisiblePosition);
+                        Log.d(TAG, feed.getTag());
+                        if (feed.getViewType().equals("video")) {
+                            mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
+                            mAdapter.videoPlayerController.handlePlayBack(feed);
+                        }
+                    }
+                }
+
+            }
+        }
+    });*/
 }

@@ -25,13 +25,14 @@ public class DbUtility {
         db = helper.getWritableDatabase();
         Rdb = helper.getReadableDatabase();
     }
-    public void addCategory(feedModel model){
+    public void addFeed(feedModel model){
         ContentValues values = new ContentValues();
         values.put(DataContract.Data.AVAILABLE, model.getAvailable());
         values.put(DataContract.Data.TAG, model.getTag());
         values.put(DataContract.Data.URL, model.getURL());
         values.put(DataContract.Data.WEBURL, model.getWebUrl());
         values.put(DataContract.Data.TYPE, model.getViewType());
+        values.put(DataContract.Data.TYPE2, "2");
         //byte[] im = model.getImage().getBytes();
         db.insert(DataContract.Data.TABLE_NAME, null, values);
 
@@ -64,7 +65,7 @@ public class DbUtility {
 
     public int  Delete(){
         if(!readData().isEmpty()){
-            db.delete(DataContract.Data.TABLE_NAME, DataContract.Data.TYPE + "= ?", new String[] {"1"});
+            db.delete(DataContract.Data.TABLE_NAME, DataContract.Data.TYPE2 + "= ?", new String[] {"2"});
             return 1;
         }
         return 0;
