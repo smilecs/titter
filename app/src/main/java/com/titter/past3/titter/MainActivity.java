@@ -227,39 +227,40 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
             super.onPostExecute(feedModels);
             model = feedModels;
             mAdapter.notifyDataSetChanged();
-        }
-    }
-/*
-    mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-        @Override
-        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-            super.onScrollStateChanged(recyclerView, newState);
-            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                Log.d(TAG, "idle");
-                LinearLayoutManager layoutManager = ((LinearLayoutManager) recyclerView.getLayoutManager());
-                int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
-                int findFirstCompletelyVisibleItemPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
-                feedModel feed;
-                if (model != null && model.size() > 0) {
-                    if (findFirstCompletelyVisibleItemPosition >= 0) {
-                        feed = model.get(findFirstCompletelyVisibleItemPosition);
-                        Log.d(TAG, feed.getTag());
-                        if (feed.getViewType().equals("video")) {
-                            mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
-                            mAdapter.videoPlayerController.handlePlayBack(feed);
-                        }
+            if(!feedModels.isEmpty()){
+                mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                    @Override
+                    public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                        super.onScrollStateChanged(recyclerView, newState);
+                        if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                            Log.d(TAG, "idle");
+                            LinearLayoutManager layoutManager = ((LinearLayoutManager) recyclerView.getLayoutManager());
+                            int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
+                            int findFirstCompletelyVisibleItemPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
+                            feedModel feed;
+                            if (model != null && model.size() > 0) {
+                                if (findFirstCompletelyVisibleItemPosition >= 0) {
+                                    feed = model.get(findFirstCompletelyVisibleItemPosition);
+                                    Log.d(TAG, feed.getTag());
+                                    if (feed.getViewType().equals("video")) {
+                                        mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
+                                        mAdapter.videoPlayerController.handlePlayBack(feed);
+                                    }
 
-                    } else {
-                        feed = model.get(firstVisiblePosition);
-                        Log.d(TAG, feed.getTag());
-                        if (feed.getViewType().equals("video")) {
-                            mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
-                            mAdapter.videoPlayerController.handlePlayBack(feed);
+                                } else {
+                                    feed = model.get(firstVisiblePosition);
+                                    Log.d(TAG, feed.getTag());
+                                    if (feed.getViewType().equals("video")) {
+                                        mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
+                                        mAdapter.videoPlayerController.handlePlayBack(feed);
+                                    }
+                                }
+                            }
+
                         }
                     }
-                }
-
+                });
             }
         }
-    });*/
+    }
 }

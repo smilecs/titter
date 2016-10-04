@@ -109,13 +109,13 @@ public class VideoPlayerController {
 
 
     private boolean isVideoDownloaded(feedModel video) {
-        String isVideoDownloaded = Utils.readPreferences(context, video.getURL());
+        String isVideoDownloaded = video.getAvailable();
+
         Log.d(TAG, isVideoDownloaded);
         boolean isVideoAvailable = Boolean.valueOf(isVideoDownloaded);
         if(isVideoAvailable)
         {
             Log.d(TAG, "available");
-            //If video is downloaded then hide its progress
             hideProgressSpinner(video);
             return true;
         }

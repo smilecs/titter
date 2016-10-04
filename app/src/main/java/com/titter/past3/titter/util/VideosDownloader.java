@@ -45,8 +45,9 @@ public class VideosDownloader {
                     Log.d(TAG, "started33");
                     final feedModel video = videosList.get(i);
                     String url = video.getURL();
+                    video.setAvailable("true");
                     //downloadfromUrl(url, fileCache.directory(), url, downloadManager);
-                    String downloadPath = downloadVideo(url);
+                    String downloadPath = downloadVideo(url, video);
                    /* Activity activity = (Activity) context;
                     activity.runOnUiThread(new Runnable() {
                         @Override
@@ -55,7 +56,8 @@ public class VideosDownloader {
                             iVideoDownloadListener.onVideoDownloaded(video);
                             }
                         });*/
-                    db.addFeed(video);
+                    //db.addFeed(video);
+
                 }
                 Activity activity = (Activity) context;
                 activity.runOnUiThread(new Runnable() {
@@ -71,7 +73,7 @@ public class VideosDownloader {
         thread.start();
     }
 
-    private String downloadVideo(String urlStr)
+    private String downloadVideo(String urlStr, feedModel video)
     {
         URL url = null;
         File file = null;
@@ -107,6 +109,7 @@ public class VideosDownloader {
             e.printStackTrace();
         }
         Log.d(TAG, file.getAbsolutePath());
+        db.addFeed(video);
         return file.getAbsolutePath();
     }
 
