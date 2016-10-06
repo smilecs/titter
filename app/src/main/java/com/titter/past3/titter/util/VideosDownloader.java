@@ -45,7 +45,7 @@ public class VideosDownloader {
                     Log.d(TAG, "started33");
                     final feedModel video = videosList.get(i);
                     String url = video.getURL();
-                    video.setAvailable("true");
+
                     //downloadfromUrl(url, fileCache.directory(), url, downloadManager);
                     String downloadPath = downloadVideo(url, video);
                    /* Activity activity = (Activity) context;
@@ -100,13 +100,16 @@ public class VideosDownloader {
             outStream.flush();
             outStream.close();
             inStream.close();
+            video.setAvailable("true");
 
         }
         catch (MalformedURLException e) {
             e.printStackTrace();
+            video.setAvailable("false");
         }
         catch (IOException e) {
             e.printStackTrace();
+            video.setAvailable("false");
         }
         Log.d(TAG, file.getAbsolutePath());
         db.addFeed(video);
