@@ -2,17 +2,18 @@ package com.titter.past3.titter.adapter;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
 import com.titter.past3.titter.R;
 import com.titter.past3.titter.model.feedModel;
 import com.titter.past3.titter.util.VideoPlayer;
@@ -44,7 +45,7 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
     }*/
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
-       public NetworkImageView img;
+       public ImageView img;
         public VideoPlayer vid;
         public TextView txt;
         public RelativeLayout layout;
@@ -68,7 +69,7 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
                     });
                     break;
                 default:
-                    img = (NetworkImageView) v.findViewById(R.id.imageView);
+                    img = (ImageView) v.findViewById(R.id.imageView);
                     break;
             }
             txt = (TextView) v.findViewById(R.id.title);
@@ -123,7 +124,7 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
                 ImageLoader imageLoader = volleySingleton.getsInstance().getImageLoader();
                 //ImageRequest ir = new ImageRequest()
                 Log.d("nulltest", mod.getURL());
-                holder.img.setImageUrl(mod.getURL(), imageLoader);
+                holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));
                 holder.txt.setTypeface(robot);
                 holder.txt.setText(mod.getTag());
                 break;

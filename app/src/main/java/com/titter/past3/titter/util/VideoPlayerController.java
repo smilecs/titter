@@ -50,7 +50,8 @@ public class VideoPlayerController {
                 Log.d(TAG, "contains yes");
                 final VideoPlayer videoPlayer2 = videos.get(video.getIndex());
 
-                String localPath = fileCache.getFile(video.getURL()).getAbsolutePath();
+                //String localPath = fileCache.getFile(video.getURL()).getAbsolutePath();
+                String localPath = video.getURL();
                 if(!videoPlayer2.isLoaded){
                     Log.d(TAG, localPath);
                     videoPlayer2.loadVideo(localPath, video);
@@ -83,7 +84,8 @@ public class VideoPlayerController {
             }
         }
         else{
-            String localPath = fileCache.getFile(video.getURL()).getAbsolutePath();
+            //String localPath = fileCache.getFile(video.getURL()).getAbsolutePath();
+            String localPath = video.getURL();
             final VideoPlayer videoPlayer2 = videos.get(video.getIndex());
 //            videoPlayer2.mp.reset();
             videoPlayer2.loadVideo(localPath, video);

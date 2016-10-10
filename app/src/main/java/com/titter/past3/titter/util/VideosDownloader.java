@@ -48,6 +48,7 @@ public class VideosDownloader {
 
                     //downloadfromUrl(url, fileCache.directory(), url, downloadManager);
                     String downloadPath = downloadVideo(url, video);
+                   // video.setURL(downloadPath);
                    /* Activity activity = (Activity) context;
                     activity.runOnUiThread(new Runnable() {
                         @Override
@@ -77,9 +78,13 @@ public class VideosDownloader {
     {
         URL url = null;
         File file = null;
+        String type = "jpg";
+        if(video.getViewType().equals("video")){
+            type = "mp4";
+        }
         try
         {   Log.d(TAG, "started22");
-            file = fileCache.getFile(urlStr);
+            file = fileCache.getFile(urlStr, type);
             url = new URL(urlStr);
             long startTime = System.currentTimeMillis();
             URLConnection ucon = null;
@@ -112,6 +117,7 @@ public class VideosDownloader {
             video.setAvailable("false");
         }
         Log.d(TAG, file.getAbsolutePath());
+        video.setURL(file.getAbsolutePath());
         db.addFeed(video);
         return file.getAbsolutePath();
     }

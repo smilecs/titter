@@ -41,6 +41,7 @@ public class DbUtility {
     public ArrayList<feedModel> readData(){
         Log.d("Dbutility", "here");
         String [] selectionAgs = {};
+        int i = 0;
         ArrayList<feedModel> list = new ArrayList<>();
         Cursor cursor = Rdb.query(DataContract.Data.TABLE_NAME, projection, null, selectionAgs, null, null,  null);
         if(cursor != null  && cursor.moveToFirst()) {
@@ -52,7 +53,9 @@ public class DbUtility {
                     model.setViewType(cursor.getString(cursor.getColumnIndexOrThrow(DataContract.Data.TYPE)));
                     model.setURL(cursor.getString(cursor.getColumnIndexOrThrow(DataContract.Data.URL)));
                     model.setWebUrl(cursor.getString(cursor.getColumnIndexOrThrow(DataContract.Data.WEBURL)));
+                    model.setIndex(String.valueOf(i));
                     list.add(model);
+                    i++;
                 }catch (Exception e){
                     e.printStackTrace();
                 }

@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         requestQueue = volley.getmRequestQueue();
        // Refresh();
         Log.d("tttt", "tttt");
-
+        new LoadData().execute();
 
 
 
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, Utils.URL, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject jsonObject) {
-                //Log.d("MainActivity", jsonObject.getString("Data"));
+                Log.d("MainActivity", "download");
                 JSONArray array;
                 try {
                     array = jsonObject.getJSONArray("Data");
@@ -217,8 +217,9 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         protected ArrayList<feedModel> doInBackground(ArrayList<feedModel>... params) {
             if (dbUtility.readData().size() < 1){
                 Refresh();
-                return null;
+                return model;
             }
+            Log.d("Main", "m");
             return dbUtility.readData();
         }
 
@@ -226,7 +227,10 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         protected void onPostExecute(ArrayList<feedModel> feedModels) {
             super.onPostExecute(feedModels);
             model = feedModels;
+            mAdapter = new FeedsAdapter(context, feedModels);
+            mRecyclerView.setAdapter(mAdapter);
             mAdapter.notifyDataSetChanged();
+            progressBar.setVisibility(View.GONE);
             if(!feedModels.isEmpty()){
                 mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                     @Override
