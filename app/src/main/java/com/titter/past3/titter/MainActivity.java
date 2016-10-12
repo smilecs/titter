@@ -27,6 +27,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.titter.past3.titter.adapter.FeedsAdapter;
 import com.titter.past3.titter.model.feedModel;
 import com.titter.past3.titter.util.DbUtility;
+import com.titter.past3.titter.util.FileCache;
 import com.titter.past3.titter.util.IVideoDownloadListener;
 import com.titter.past3.titter.util.TitterService;
 import com.titter.past3.titter.util.Utils;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     RequestQueue requestQueue;
     ProgressBar progressBar;
     DbUtility dbUtility;
+    FileCache file;
     DrawerLayout drawer;
     Context context;
     Button refresh;
@@ -59,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = MainActivity.this;
+        file = new FileCache(this);
         dbUtility = new DbUtility(this);
         volley = volleySingleton.getsInstance();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -216,6 +219,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         @Override
         protected ArrayList<feedModel> doInBackground(ArrayList<feedModel>... params) {
             if (dbUtility.readData().size() < 1){
+                file.clear();
                 Refresh();
                 return model;
             }
