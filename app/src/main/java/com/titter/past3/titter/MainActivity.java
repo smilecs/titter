@@ -2,6 +2,8 @@ package com.titter.past3.titter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -39,7 +41,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements IVideoDownloadListener, NavigationView.OnNavigationItemSelectedListener{
+public class MainActivity extends AppCompatActivity implements IVideoDownloadListener, NavigationView.OnNavigationItemSelectedListener {
     private RecyclerView mRecyclerView;
     private FeedsAdapter mAdapter;
     private RecyclerView.LayoutManager mlayoutManager;
@@ -67,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mRecyclerView = (RecyclerView) findViewById(R.id.cardList);
-        progressBar= (ProgressBar) findViewById(R.id.progressBar);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         refresh = (Button) findViewById(R.id.button);
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
 
 //            mAdapter.notifyDataSetChanged();
         mRecyclerView.setAdapter(mAdapter);
-        drawer = (DrawerLayout)findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
@@ -96,12 +98,10 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         Intent i = new Intent(this, TitterService.class);
         startService(i);
 
-
-
-
         requestQueue = volley.getmRequestQueue();
-       // Refresh();
+        // Refresh();
         Log.d("tttt", "tttt");
+        NetworkStatus();
         new LoadData().execute();
 
 
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     @Override
     public void onVideoDownloaded() {
         Log.d("MainActivity", "downloaded");
-    //mAdapter.videoPlayerController.handlePlayBack(video);
+        //mAdapter.videoPlayerController.handlePlayBack(video);
         new LoadData().execute();
     }
 
@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
             startActivity(i);
         }
 
-        if(id == R.id.about) {
+        if (id == R.id.about) {
             Intent i = new Intent(this, About.class);
             startActivity(i);
         }
@@ -161,7 +161,12 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         return true;
     }
 
-    public void Refresh(){
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    public void Refresh() {
         refresh.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, Utils.URL, null, new Response.Listener<JSONObject>() {
@@ -169,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
             public void onResponse(JSONObject jsonObject) {
                 Log.d("MainActivity", "download");
                 JSONArray array;
+                ArrayList<feedModel> tmp = new ArrayList<>();
                 try {
                     array = jsonObject.getJSONArray("Data");
 
@@ -186,18 +192,17 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
 
 
                         }
-                        model.add(mode);
+                        tmp.add(mode);
 
                     }
 
                     //progressBar.setVisibility(View.GONE);
-                   // mAdapter.notifyDataSetChanged();
-                    if(array.length() > 0){
-                        videosDownloader.startVideosDownloading(model);
+                    // mAdapter.notifyDataSetChanged();
+                    if (array.length() > 0) {
+                        videosDownloader.startVideosDownloading(tmp);
                     }
 
-                }
-                catch (Exception je){
+                } catch (Exception je) {
                     je.printStackTrace();
                 }
             }
@@ -215,11 +220,12 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         requestQueue.add(req);
     }
 
-    private class LoadData extends AsyncTask<ArrayList<feedModel>, ArrayList<feedModel>, ArrayList<feedModel>>{
+    private class LoadData extends AsyncTask<ArrayList<feedModel>, ArrayList<feedModel>, ArrayList<feedModel>> {
         @Override
         protected ArrayList<feedModel> doInBackground(ArrayList<feedModel>... params) {
-            if (dbUtility.readData().size() < 1){
+            if (dbUtility.readData().size() < 1) {
                 file.clear();
+                dbUtility.Delete();
                 Refresh();
                 return model;
             }
@@ -235,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
             mRecyclerView.setAdapter(mAdapter);
             mAdapter.notifyDataSetChanged();
             progressBar.setVisibility(View.GONE);
-            if(!feedModels.isEmpty()){
+            if (!feedModels.isEmpty()) {
                 mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                     @Override
                     public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -245,10 +251,12 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                             LinearLayoutManager layoutManager = ((LinearLayoutManager) recyclerView.getLayoutManager());
                             int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
                             int findFirstCompletelyVisibleItemPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
+
                             feedModel feed;
                             if (model != null && model.size() > 0) {
                                 if (findFirstCompletelyVisibleItemPosition >= 0) {
                                     feed = model.get(findFirstCompletelyVisibleItemPosition);
+                                    Log.d(TAG, "top");
                                     Log.d(TAG, feed.getTag());
                                     if (feed.getViewType().equals("video")) {
                                         mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
@@ -257,6 +265,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
 
                                 } else {
                                     feed = model.get(firstVisiblePosition);
+                                    Log.d(TAG, "Bottom");
                                     Log.d(TAG, feed.getTag());
                                     if (feed.getViewType().equals("video")) {
                                         mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
@@ -269,6 +278,23 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                     }
                 });
             }
+         //   NetworkStatus();
         }
+    }
+
+    public void NetworkStatus() {
+        Log.d("MainActivity", "Internet started");
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        if (activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+            //boolean isMOBILE = activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
+            // message = "Titter Service connected";
+            Refresh();
+
+        } else {
+            //message = "Titter Service Offline";
+        }
+
     }
 }

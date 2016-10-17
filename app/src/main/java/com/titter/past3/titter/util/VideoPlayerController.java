@@ -43,13 +43,19 @@ public class VideoPlayerController {
         }
     }
 
+ /*   public void handlePlayBack(feedModel video){
+            if(isVideoVisible(video)){
+                Log.d(TAG, "visible");
+                playVideo(video);
+            }
+    }*/
+
     private void playVideo(final feedModel video){
         if(currentPlayingVideo != video){
             Log.d(TAG, "currentplayin no");
             if(videos.containsKey(video.getIndex())){
                 Log.d(TAG, "contains yes");
                 final VideoPlayer videoPlayer2 = videos.get(video.getIndex());
-
                 //String localPath = fileCache.getFile(video.getURL()).getAbsolutePath();
                 String localPath = video.getURL();
                 if(!videoPlayer2.isLoaded){
@@ -61,7 +67,7 @@ public class VideoPlayerController {
                             Log.d(TAG, "contains yes2");
                             if(vid.getIndex().equals(video.getIndex())){
                                 Log.d(TAG, "contains yes2");
-                                if(currentPlayingVideo != null && currentPlayingVideo!= video){
+                                if(currentPlayingVideo != null && currentPlayingVideo != video){
                                     Log.d(TAG, "contains yes3");
                                     VideoPlayer videoPlayer1 = videos.get(currentPlayingVideo.getIndex());
                                     videoPlayer1.pausePlay();

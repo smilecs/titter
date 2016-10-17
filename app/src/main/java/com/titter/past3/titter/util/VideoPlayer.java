@@ -136,6 +136,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         }
 
     }
+
     public void setOnVideoPreparedListner(IVideoPreparedListener iVideoPreparedListener){
         this.iVideoPreparedListener = iVideoPreparedListener;
     }

@@ -18,11 +18,14 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 
+import io.realm.Realm;
+
 /**
  * Created by SMILECS on 8/12/16.
  */
 public class VideosDownloader {
     private static String TAG = "VideosDownloader";
+    Realm realm;
     Context context;
     FileCache fileCache;
     IVideoDownloadListener iVideoDownloadListener;
@@ -34,6 +37,7 @@ public class VideosDownloader {
         fileCache = new FileCache(context);
         downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         db = new DbUtility(context);
+        realm = Realm.getDefaultInstance();
 
     }
     public void startVideosDownloading(final ArrayList<feedModel> videosList){
@@ -41,6 +45,7 @@ public class VideosDownloader {
             @Override
             public void run() {
                 Log.d(TAG, "started");
+                db.Delete();
                 for(int i=0; i<videosList.size(); i++){
                     Log.d(TAG, "started33");
                     final feedModel video = videosList.get(i);
@@ -74,7 +79,7 @@ public class VideosDownloader {
         thread.start();
     }
 
-    private String downloadVideo(String urlStr, feedModel video)
+    public String downloadVideo(String urlStr, final feedModel video)
     {
         URL url = null;
         File file = null;
@@ -82,44 +87,51 @@ public class VideosDownloader {
         if(video.getViewType().equals("video")){
             type = "mp4";
         }
-        try
-        {   Log.d(TAG, "started22");
-            file = fileCache.getFile(urlStr, type);
-            url = new URL(urlStr);
-            long startTime = System.currentTimeMillis();
-            URLConnection ucon = null;
-            ucon = url.openConnection();
-            InputStream is = ucon.getInputStream();
-            Log.d(TAG, "started22");
-            BufferedInputStream inStream = new BufferedInputStream(is, 1024 * 5);
-            FileOutputStream outStream = new FileOutputStream(file);
-            byte[] buff = new byte[5 * 1024];
+            try
+            {   Log.d(TAG, "started22");
+                file = fileCache.getFile(urlStr, type);
+                url = new URL(urlStr);
+                long startTime = System.currentTimeMillis();
+                URLConnection ucon = null;
+                ucon = url.openConnection();
+                InputStream is = ucon.getInputStream();
+                Log.d(TAG, "started22");
+                BufferedInputStream inStream = new BufferedInputStream(is, 1024 * 5);
+                FileOutputStream outStream = new FileOutputStream(file);
+                byte[] buff = new byte[5 * 1024];
 
-            //Read bytes (and store them) until there is nothing more to read(-1)
-            int len;
-            while ((len = inStream.read(buff)) != -1) {
-                outStream.write(buff, 0, len);
+                //Read bytes (and store them) until there is nothing more to read(-1)
+                int len;
+                while ((len = inStream.read(buff)) != -1) {
+                    outStream.write(buff, 0, len);
+                }
+
+                //clean up
+                outStream.flush();
+                outStream.close();
+                inStream.close();
+                video.setAvailable("true");
+
             }
+            catch (MalformedURLException e) {
+                e.printStackTrace();
+                video.setAvailable("false");
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+                video.setAvailable("false");
+            }
+            Log.d(TAG, file.getAbsolutePath());
+            video.setURL(file.getAbsolutePath());
+            realm.executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    realm.copyToRealmOrUpdate(video);
+                }
+            });
+            //db.addFeed(video);
 
-            //clean up
-            outStream.flush();
-            outStream.close();
-            inStream.close();
-            video.setAvailable("true");
-
-        }
-        catch (MalformedURLException e) {
-            e.printStackTrace();
-            video.setAvailable("false");
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            video.setAvailable("false");
-        }
-        Log.d(TAG, file.getAbsolutePath());
-        video.setURL(file.getAbsolutePath());
-        db.addFeed(video);
-        return file.getAbsolutePath();
+        return "ok";
     }
 
 

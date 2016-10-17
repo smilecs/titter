@@ -13,12 +13,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.ImageLoader;
 import com.titter.past3.titter.R;
 import com.titter.past3.titter.model.feedModel;
 import com.titter.past3.titter.util.VideoPlayer;
 import com.titter.past3.titter.util.VideoPlayerController;
-import com.titter.past3.titter.util.volleySingleton;
 
 import java.util.ArrayList;
 
@@ -100,6 +98,7 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
     public void onBindViewHolder(ViewHolder holder, int position) {
         int Type = IMAGE;
         feedModel mod = model.get(position);
+
         Typeface robot = Typeface.createFromAsset(context.getAssets(),
                 "fonts/Roboto-Medium.ttf"); //use this.getAssets if you are calling from an Activity
         try{
@@ -114,14 +113,14 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
         switch (Type){
             case VIDEO:
                 //Uri videoUri = Uri.parse(mod.getURL());
-                videoPlayerController.loadVideo(mod, holder.vid,holder.progressBar );
-              //  holder.vid.setVideoURI(videoUri);
+                videoPlayerController.loadVideo(mod, holder.vid, holder.progressBar);
+                //holder.vid.setVideoURI(videoUri);
                 //holder.vid.seekTo(holder.vid.getCurrentPosition() + 1000);
                 holder.txt.setTypeface(robot);
                 holder.txt.setText(mod.getTag());
                 break;
             default:
-                ImageLoader imageLoader = volleySingleton.getsInstance().getImageLoader();
+              //  ImageLoader imageLoader = volleySingleton.getsInstance().getImageLoader();
                 //ImageRequest ir = new ImageRequest()
                 Log.d("nulltest", mod.getURL());
                 holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));

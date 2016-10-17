@@ -2,16 +2,29 @@ package com.titter.past3.titter.model;
 
 import java.io.Serializable;
 
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by SMILECS on 4/19/16.
  */
-public class feedModel implements Serializable{
-    public String ViewType;
-    public String URL;
-    public String WebUrl;
-    public String Tag;
-    public String index;
-    public String available;
+public class feedModel extends RealmObject implements Serializable{
+    @PrimaryKey String ViewType;
+    String URL;
+    String WebUrl;
+    String Tag;
+    String index;
+    String available;
+    String playing;
+
+    public String getPlaying() {
+        return playing;
+    }
+
+    public void setPlaying(String playing) {
+        this.playing = playing;
+    }
+
     public String getAvailable() {
         return available;
     }
