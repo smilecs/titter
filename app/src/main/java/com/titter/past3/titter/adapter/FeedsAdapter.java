@@ -1,40 +1,57 @@
 package com.titter.past3.titter.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
+import com.titter.past3.titter.MainActivity;
 import com.titter.past3.titter.R;
 import com.titter.past3.titter.model.feedModel;
+import com.titter.past3.titter.util.FileCache;
 import com.titter.past3.titter.util.VideoPlayer;
 import com.titter.past3.titter.util.VideoPlayerController;
+import com.titter.past3.titter.util.volleySingleton;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+
+import io.realm.OrderedRealmCollection;
+import io.realm.Realm;
+import io.realm.RealmRecyclerViewAdapter;
 
 /**
  * Created by SMILECS on 4/21/16.
  */
-public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
+public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapter.ViewHolder> {
     Context context;
     static final int IMAGE = 1;
     static final int VIDEO = 2;
     ArrayList<feedModel> model;
+    FileCache fileCache;
+    Realm realm;
+
     public VideoPlayerController videoPlayerController;
 
-    public FeedsAdapter(Context context, ArrayList<feedModel> model)
-    {
-        this.model = model;
+    public FeedsAdapter(Context context, MainActivity activity, OrderedRealmCollection<feedModel> model)
+    {   super(activity, model, true);
+        //this.model = model;
+        this.realm = Realm.getDefaultInstance();
+        fileCache = new FileCache(context);
         this.context = context;
-        videoPlayerController = new VideoPlayerController(context);
+        videoPlayerController = new VideoPlayerController(context, realm);
 
 
     }
@@ -43,7 +60,7 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
     }*/
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
-       public ImageView img;
+       public NetworkImageView img;
         public VideoPlayer vid;
         public TextView txt;
         public RelativeLayout layout;
@@ -67,7 +84,7 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
                     });
                     break;
                 default:
-                    img = (ImageView) v.findViewById(R.id.imageView);
+                    img = (NetworkImageView) v.findViewById(R.id.imageView);
                     break;
             }
             txt = (TextView) v.findViewById(R.id.title);
@@ -95,9 +112,9 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         int Type = IMAGE;
-        feedModel mod = model.get(position);
+        final feedModel mod = getData().get(position);
 
         Typeface robot = Typeface.createFromAsset(context.getAssets(),
                 "fonts/Roboto-Medium.ttf"); //use this.getAssets if you are calling from an Activity
@@ -113,17 +130,44 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
         switch (Type){
             case VIDEO:
                 //Uri videoUri = Uri.parse(mod.getURL());
-                videoPlayerController.loadVideo(mod, holder.vid, holder.progressBar);
+                videoPlayerController.loadVideo(mod, holder.vid, holder.progressBar, position);
                 //holder.vid.setVideoURI(videoUri);
                 //holder.vid.seekTo(holder.vid.getCurrentPosition() + 1000);
                 holder.txt.setTypeface(robot);
                 holder.txt.setText(mod.getTag());
                 break;
             default:
-              //  ImageLoader imageLoader = volleySingleton.getsInstance().getImageLoader();
-                //ImageRequest ir = new ImageRequest()
+                ImageLoader imageLoader = volleySingleton.getsInstance().getImageLoader();
+                imageLoader.get(mod.getURL(), new ImageLoader.ImageListener() {
+                    @Override
+                    public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                      try{
+                          File file = fileCache.getFile(mod.getURL(), "jpg");
+                          Bitmap bm = imageContainer.getBitmap();
+                          holder.img.setImageBitmap(bm);
+                          FileOutputStream outStream = new FileOutputStream(file);
+                          ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                          bm.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                          byte[] byteArray = stream.toByteArray();
+                          outStream.write(byteArray, 0, byteArray.length);
+                          mod.setURL(file.getAbsolutePath());
+                          realm.executeTransactionAsync(new Realm.Transaction() {
+                              @Override
+                              public void execute(Realm realm) {
+                                    realm.copyToRealmOrUpdate(mod);
+                              }
+                          });
+                      }catch (Exception e){
+                          e.printStackTrace();
+                      }
+                    }
+
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        volleyError.printStackTrace();
+                    }
+                });
                 Log.d("nulltest", mod.getURL());
-                holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));
                 holder.txt.setTypeface(robot);
                 holder.txt.setText(mod.getTag());
                 break;
@@ -136,20 +180,20 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
     @Override
     public int getItemCount() {
         try{
-            if(model.isEmpty()){
+            if(getData().isEmpty()){
                 return 0;
             }
         }catch (NullPointerException npe){
             npe.getMessage();
             return 0;
         }
-        return model.size();
+        return getData().size();
     }
 
 
     @Override
     public int getItemViewType(int position) {
-        feedModel mod = model.get(position);
+        feedModel mod = getData().get(position);
         try{
             if(mod.getViewType().equals("video")){
                 return 2;

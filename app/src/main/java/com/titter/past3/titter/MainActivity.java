@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -41,6 +40,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import io.realm.Realm;
+
 public class MainActivity extends AppCompatActivity implements IVideoDownloadListener, NavigationView.OnNavigationItemSelectedListener {
     private RecyclerView mRecyclerView;
     private FeedsAdapter mAdapter;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     VideosDownloader videosDownloader;
     volleySingleton volley;
     RequestQueue requestQueue;
+    Realm realm;
     ProgressBar progressBar;
     DbUtility dbUtility;
     FileCache file;
@@ -63,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = MainActivity.this;
+        Realm.init(this);
+        realm = Realm.getDefaultInstance();
         file = new FileCache(this);
         dbUtility = new DbUtility(this);
         volley = volleySingleton.getsInstance();
@@ -78,16 +82,50 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
             }
         });
         mlayoutManager = new LinearLayoutManager(this);
+        mAdapter = new FeedsAdapter(context, this, realm.where(feedModel.class).findAllAsync());
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mlayoutManager);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    Log.d(TAG, "idle");
+                    LinearLayoutManager layoutManager = ((LinearLayoutManager) recyclerView.getLayoutManager());
+                    int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
+                    int findFirstCompletelyVisibleItemPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
+                    feedModel feed;
+
+                    if (mAdapter.getData() != null && mAdapter.getData().size() > 0) {
+                        if (findFirstCompletelyVisibleItemPosition >= 0) {
+                            feed = mAdapter.getData().get(findFirstCompletelyVisibleItemPosition);
+                            Log.d(TAG, "top");
+                            Log.d(TAG, feed.getTag());
+                            if (feed.getViewType().equals("video")) {
+                                mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
+                                mAdapter.videoPlayerController.handlePlayBack(feed);
+                            }
+
+                        } else {
+                            feed = mAdapter.getData().get(firstVisiblePosition);
+                            Log.d(TAG, "Bottom");
+                            Log.d(TAG, feed.getTag());
+                            if (feed.getViewType().equals("video")) {
+                                mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
+                                mAdapter.videoPlayerController.handlePlayBack(feed);
+                            }
+                        }
+                    }
+
+                }
+            }
+        });
         model = new ArrayList<>();
         videos = new ArrayList<>();
-        mAdapter = new FeedsAdapter(this, model);
-        videosDownloader = new VideosDownloader(context);
-        videosDownloader.setOnVideoDownloadListener(this);
 
-//            mAdapter.notifyDataSetChanged();
-        mRecyclerView.setAdapter(mAdapter);
+        videosDownloader = new VideosDownloader(context, realm);
+        videosDownloader.setOnVideoDownloadListener(this);
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -97,15 +135,11 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         nav.setNavigationItemSelectedListener(this);
         Intent i = new Intent(this, TitterService.class);
         startService(i);
-
         requestQueue = volley.getmRequestQueue();
         // Refresh();
         Log.d("tttt", "tttt");
         NetworkStatus();
-        new LoadData().execute();
-
-
-
+        //Reload();
     }
 
     @Override
@@ -138,10 +172,11 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     }
 
     @Override
-    public void onVideoDownloaded() {
+    public void onVideoDownloaded(int position) {
         Log.d("MainActivity", "downloaded");
+        mAdapter.notifyItemChanged(position);
         //mAdapter.videoPlayerController.handlePlayBack(video);
-        new LoadData().execute();
+       // new LoadData().execute();
     }
 
     @Override
@@ -174,33 +209,39 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
             public void onResponse(JSONObject jsonObject) {
                 Log.d("MainActivity", "download");
                 JSONArray array;
-                ArrayList<feedModel> tmp = new ArrayList<>();
+                //realm = Realm.getDefaultInstance();
+               // ArrayList<feedModel> tmp = new ArrayList<>();
                 try {
+                    progressBar.setVisibility(View.GONE);
                     array = jsonObject.getJSONArray("Data");
-
+                    model.clear();
+                    Log.d("MainActivity", array.toString());
                     for (int i = 0; i < array.length(); i++) {
-                        feedModel mode = new feedModel();
+                        final feedModel mode = new feedModel();
                         try {
-                            // Log.d("MainActivity", json.toString());
+
+                            mode.setId(array.getJSONObject(i).getString("File"));
                             mode.setTag(array.getJSONObject(i).getString("Description"));
                             mode.setViewType(array.getJSONObject(i).getString("Type"));
                             mode.setURL(array.getJSONObject(i).getString("File"));
                             mode.setIndex(String.valueOf(i));
-
                         } catch (Throwable je) {
                             je.printStackTrace();
-
-
                         }
-                        tmp.add(mode);
-
+                        model.add(mode);
                     }
+                    realm.executeTransaction(new Realm.Transaction() {
+                        @Override
+                        public void execute(Realm realm) {
+                            realm.copyToRealm(model);
+                        }
+                    });
+                   // Reload();
+                    progressBar.setVisibility(View.GONE);
 
-                    //progressBar.setVisibility(View.GONE);
-                    // mAdapter.notifyDataSetChanged();
-                    if (array.length() > 0) {
+                    /*if (array.length() > 0) {
                         videosDownloader.startVideosDownloading(tmp);
-                    }
+                    }*/
 
                 } catch (Exception je) {
                     je.printStackTrace();
@@ -220,65 +261,17 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         requestQueue.add(req);
     }
 
-    private class LoadData extends AsyncTask<ArrayList<feedModel>, ArrayList<feedModel>, ArrayList<feedModel>> {
-        @Override
-        protected ArrayList<feedModel> doInBackground(ArrayList<feedModel>... params) {
-            if (dbUtility.readData().size() < 1) {
-                file.clear();
-                dbUtility.Delete();
-                Refresh();
-                return model;
-            }
-            Log.d("Main", "m");
-            return dbUtility.readData();
-        }
 
-        @Override
-        protected void onPostExecute(ArrayList<feedModel> feedModels) {
-            super.onPostExecute(feedModels);
-            model = feedModels;
-            mAdapter = new FeedsAdapter(context, feedModels);
+    public void Reload(){
+        if(realm.where(feedModel.class).findAllAsync().size() < 1){
+           // Refresh();
+        }else {
+            Log.d("Mainactivity", "reload");
+            mAdapter = new FeedsAdapter(context, this, realm.where(feedModel.class).findAllAsync());
             mRecyclerView.setAdapter(mAdapter);
             mAdapter.notifyDataSetChanged();
             progressBar.setVisibility(View.GONE);
-            if (!feedModels.isEmpty()) {
-                mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                    @Override
-                    public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                        super.onScrollStateChanged(recyclerView, newState);
-                        if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                            Log.d(TAG, "idle");
-                            LinearLayoutManager layoutManager = ((LinearLayoutManager) recyclerView.getLayoutManager());
-                            int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
-                            int findFirstCompletelyVisibleItemPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
 
-                            feedModel feed;
-                            if (model != null && model.size() > 0) {
-                                if (findFirstCompletelyVisibleItemPosition >= 0) {
-                                    feed = model.get(findFirstCompletelyVisibleItemPosition);
-                                    Log.d(TAG, "top");
-                                    Log.d(TAG, feed.getTag());
-                                    if (feed.getViewType().equals("video")) {
-                                        mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
-                                        mAdapter.videoPlayerController.handlePlayBack(feed);
-                                    }
-
-                                } else {
-                                    feed = model.get(firstVisiblePosition);
-                                    Log.d(TAG, "Bottom");
-                                    Log.d(TAG, feed.getTag());
-                                    if (feed.getViewType().equals("video")) {
-                                        mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
-                                        mAdapter.videoPlayerController.handlePlayBack(feed);
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                });
-            }
-         //   NetworkStatus();
         }
     }
 
@@ -291,10 +284,8 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
             //boolean isMOBILE = activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
             // message = "Titter Service connected";
             Refresh();
-
-        } else {
-            //message = "Titter Service Offline";
+        }else{
+            Reload();
         }
-
     }
 }

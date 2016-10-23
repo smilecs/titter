@@ -32,12 +32,12 @@ public class VideosDownloader {
     DownloadManager downloadManager;
     DbUtility db;
 
-    public VideosDownloader(Context context){
+    public VideosDownloader(Context context, Realm realm){
         this.context = context;
         fileCache = new FileCache(context);
         downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         db = new DbUtility(context);
-        realm = Realm.getDefaultInstance();
+        this.realm = realm;
 
     }
     public void startVideosDownloading(final ArrayList<feedModel> videosList){
@@ -52,7 +52,7 @@ public class VideosDownloader {
                     String url = video.getURL();
 
                     //downloadfromUrl(url, fileCache.directory(), url, downloadManager);
-                    String downloadPath = downloadVideo(url, video);
+                   // String downloadPath = downloadVideo(url, video);
                    // video.setURL(downloadPath);
                    /* Activity activity = (Activity) context;
                     activity.runOnUiThread(new Runnable() {
@@ -70,7 +70,7 @@ public class VideosDownloader {
                     @Override
                     public void run() {
                         //Utils.savePreferences(context, video.getURL());
-                        iVideoDownloadListener.onVideoDownloaded();
+                       // iVideoDownloadListener.onVideoDownloaded();
                     }
                 });
 
@@ -79,7 +79,7 @@ public class VideosDownloader {
         thread.start();
     }
 
-    public String downloadVideo(String urlStr, final feedModel video)
+    public String downloadVideo(final feedModel video, final int position)
     {
         URL url = null;
         File file = null;
@@ -89,8 +89,8 @@ public class VideosDownloader {
         }
             try
             {   Log.d(TAG, "started22");
-                file = fileCache.getFile(urlStr, type);
-                url = new URL(urlStr);
+                file = fileCache.getFile(video.getURL(), type);
+                url = new URL(video.getURL());
                 long startTime = System.currentTimeMillis();
                 URLConnection ucon = null;
                 ucon = url.openConnection();
@@ -123,10 +123,11 @@ public class VideosDownloader {
             }
             Log.d(TAG, file.getAbsolutePath());
             video.setURL(file.getAbsolutePath());
-            realm.executeTransaction(new Realm.Transaction() {
+            realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
                     realm.copyToRealmOrUpdate(video);
+                    iVideoDownloadListener.onVideoDownloaded(position);
                 }
             });
             //db.addFeed(video);

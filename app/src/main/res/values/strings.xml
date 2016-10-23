@@ -4,6 +4,8 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="save">SaveFile</string>
+    <string name="tet">Titter is commited to selecting the funniest of content globally and bringing them
+    directly to your screens at our soonest convenience</string>
 
     <string name="title_activity_about">About</string>
     <string name="dummy_button">Dummy Button</string>

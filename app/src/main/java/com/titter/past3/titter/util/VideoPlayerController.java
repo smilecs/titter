@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import io.realm.Realm;
+
 /**
  * Created by SMILECS on 8/10/16.
  */
@@ -20,16 +22,22 @@ public class VideoPlayerController {
     FileCache fileCache;
     int currentPositionOfItemToPlay = 0;
     feedModel currentPlayingVideo;
+    VideosDownloader downloader;
+    int position;
+    Realm realm;
     private Map<String, VideoPlayer> videos = Collections.synchronizedMap(new WeakHashMap<String, VideoPlayer>());
     private Map<String, ProgressBar> videosSpinner = Collections.synchronizedMap(new WeakHashMap<String, ProgressBar>());
 
-    public VideoPlayerController(Context context) {
+    public VideoPlayerController(Context context, Realm realm) {
         this.context = context;
+        downloader = new VideosDownloader(context, realm);
         fileCache = new FileCache(context);
+        this.realm = realm;
     }
-    public void loadVideo(feedModel video, VideoPlayer videoPlayer, ProgressBar progressBar){
+    public void loadVideo(feedModel video, VideoPlayer videoPlayer, ProgressBar progressBar, int position){
         videos.put(video.getIndex(), videoPlayer);
         videosSpinner.put(video.getIndex(), progressBar);
+        this.position = position;
         handlePlayBack(video);
     }
 
@@ -72,6 +80,7 @@ public class VideoPlayerController {
                                     VideoPlayer videoPlayer1 = videos.get(currentPlayingVideo.getIndex());
                                     videoPlayer1.pausePlay();
                                 }
+                                downloader.downloadVideo(video, position);
                                 videoPlayer2.mp.start();
                                 currentPlayingVideo = video;
                             }
@@ -85,6 +94,7 @@ public class VideoPlayerController {
                         videoPlayer1.pausePlay();
                     }
                     boolean isStarted = videoPlayer2.startPlay();
+                    downloader.downloadVideo(video, position);
                     currentPlayingVideo = video;
                 }
             }
@@ -93,7 +103,7 @@ public class VideoPlayerController {
             //String localPath = fileCache.getFile(video.getURL()).getAbsolutePath();
             String localPath = video.getURL();
             final VideoPlayer videoPlayer2 = videos.get(video.getIndex());
-//            videoPlayer2.mp.reset();
+            // videoPlayer2.mp.reset();
             videoPlayer2.loadVideo(localPath, video);
             videoPlayer2.setOnVideoPreparedListner(new IVideoPreparedListener() {
                 @Override
@@ -106,6 +116,7 @@ public class VideoPlayerController {
                             VideoPlayer videoPlayer1 = videos.get(currentPlayingVideo.getIndex());
                             videoPlayer1.pausePlay();
                         }
+                        downloader.downloadVideo(video, position);
                         videoPlayer2.mp.start();
                         currentPlayingVideo = video;
                     }
@@ -119,7 +130,7 @@ public class VideoPlayerController {
     private boolean isVideoDownloaded(feedModel video) {
         String isVideoDownloaded = video.getAvailable();
 
-        Log.d(TAG, isVideoDownloaded);
+//        Log.d(TAG, isVideoDownloaded);
         boolean isVideoAvailable = Boolean.valueOf(isVideoDownloaded);
         if(isVideoAvailable)
         {

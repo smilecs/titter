@@ -9,14 +9,22 @@ import io.realm.annotations.PrimaryKey;
  * Created by SMILECS on 4/19/16.
  */
 public class feedModel extends RealmObject implements Serializable{
-    @PrimaryKey String ViewType;
+    @PrimaryKey
+            String id;
+    String ViewType;
     String URL;
     String WebUrl;
     String Tag;
     String index;
     String available;
     String playing;
+    public String getId() {
+        return id;
+    }
 
+    public void setId(String id) {
+        this.id = id;
+    }
     public String getPlaying() {
         return playing;
     }
