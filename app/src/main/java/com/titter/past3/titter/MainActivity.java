@@ -95,10 +95,14 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                     LinearLayoutManager layoutManager = ((LinearLayoutManager) recyclerView.getLayoutManager());
                     int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
                     int findFirstCompletelyVisibleItemPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
+                    int previousItem = layoutManager.findLastCompletelyVisibleItemPosition();
                     feedModel feed;
 
                     if (mAdapter.getData() != null && mAdapter.getData().size() > 0) {
-                        if (findFirstCompletelyVisibleItemPosition >= 0) {
+                        if(previousItem != RecyclerView.NO_POSITION){
+                            mAdapter.videoPlayerController.StopPlayback(mAdapter.getData().get(previousItem));
+
+                        }
                             feed = mAdapter.getData().get(findFirstCompletelyVisibleItemPosition);
                             Log.d(TAG, "top");
                             Log.d(TAG, feed.getTag());
@@ -106,16 +110,6 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                                 mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
                                 mAdapter.videoPlayerController.handlePlayBack(feed);
                             }
-
-                        } else {
-                            feed = mAdapter.getData().get(firstVisiblePosition);
-                            Log.d(TAG, "Bottom");
-                            Log.d(TAG, feed.getTag());
-                            if (feed.getViewType().equals("video")) {
-                                mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
-                                mAdapter.videoPlayerController.handlePlayBack(feed);
-                            }
-                        }
                     }
 
                 }

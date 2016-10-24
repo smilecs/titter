@@ -3,6 +3,7 @@ package com.titter.past3.titter.util;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.titter.past3.titter.model.feedModel;
@@ -23,6 +24,7 @@ public class VideoPlayerController {
     int currentPositionOfItemToPlay = 0;
     feedModel currentPlayingVideo;
     VideosDownloader downloader;
+    ImageView img;
     int position;
     Realm realm;
     private Map<String, VideoPlayer> videos = Collections.synchronizedMap(new WeakHashMap<String, VideoPlayer>());
@@ -34,23 +36,18 @@ public class VideoPlayerController {
         fileCache = new FileCache(context);
         this.realm = realm;
     }
-    public void loadVideo(feedModel video, VideoPlayer videoPlayer, ProgressBar progressBar, int position){
+    public void loadVideo(feedModel video, VideoPlayer videoPlayer, ProgressBar progressBar, int position, ImageView img){
         videos.put(video.getIndex(), videoPlayer);
+        this.img = img;
         videosSpinner.put(video.getIndex(), progressBar);
         this.position = position;
         handlePlayBack(video);
     }
 
     public void handlePlayBack(feedModel video){
-        if(isVideoDownloaded(video)){
-            Log.d(TAG, "downloaded");
-            if(isVideoVisible(video)){
-                Log.d(TAG, "visible");
-                playVideo(video);
-            }
-        }
-    }
+        playVideo(video);
 
+    }
  /*   public void handlePlayBack(feedModel video){
             if(isVideoVisible(video)){
                 Log.d(TAG, "visible");
@@ -59,7 +56,6 @@ public class VideoPlayerController {
     }*/
 
     private void playVideo(final feedModel video){
-        if(currentPlayingVideo != video){
             Log.d(TAG, "currentplayin no");
             if(videos.containsKey(video.getIndex())){
                 Log.d(TAG, "contains yes");
@@ -80,6 +76,8 @@ public class VideoPlayerController {
                                     VideoPlayer videoPlayer1 = videos.get(currentPlayingVideo.getIndex());
                                     videoPlayer1.pausePlay();
                                 }
+                                img.setVisibility(View.GONE);
+                                videoPlayer2.setVisibility(View.VISIBLE);
                                 downloader.downloadVideo(video, position);
                                 videoPlayer2.mp.start();
                                 currentPlayingVideo = video;
@@ -94,35 +92,21 @@ public class VideoPlayerController {
                         videoPlayer1.pausePlay();
                     }
                     boolean isStarted = videoPlayer2.startPlay();
-                    downloader.downloadVideo(video, position);
+                    if(isStarted){
+                        img.setVisibility(View.GONE);
+                        videoPlayer2.setVisibility(View.VISIBLE);
+                        downloader.downloadVideo(video, position);
+                    }
                     currentPlayingVideo = video;
                 }
             }
-        }
-        else{
-            //String localPath = fileCache.getFile(video.getURL()).getAbsolutePath();
-            String localPath = video.getURL();
-            final VideoPlayer videoPlayer2 = videos.get(video.getIndex());
-            // videoPlayer2.mp.reset();
-            videoPlayer2.loadVideo(localPath, video);
-            videoPlayer2.setOnVideoPreparedListner(new IVideoPreparedListener() {
-                @Override
-                public void onVideoPrepared(feedModel vid) {
-                    Log.d(TAG, "contains yes2");
-                    if(vid.getIndex().equals(video.getIndex())){
-                        Log.d(TAG, "contains yes2");
-                        if(currentPlayingVideo != null && currentPlayingVideo!= video){
-                            Log.d(TAG, "contains yes3");
-                            VideoPlayer videoPlayer1 = videos.get(currentPlayingVideo.getIndex());
-                            videoPlayer1.pausePlay();
-                        }
-                        downloader.downloadVideo(video, position);
-                        videoPlayer2.mp.start();
-                        currentPlayingVideo = video;
-                    }
-                }
-            });
-            Log.d(TAG, "already playing video" + video.getURL());
+
+
+    }
+
+    public void StopPlayback(feedModel video){
+        if(video.getViewType().equals("video")){
+            videos.get(video.getIndex()).stopPlay();
         }
     }
 

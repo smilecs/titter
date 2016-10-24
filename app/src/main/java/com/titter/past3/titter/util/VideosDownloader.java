@@ -123,15 +123,11 @@ public class VideosDownloader {
             }
             Log.d(TAG, file.getAbsolutePath());
             video.setURL(file.getAbsolutePath());
-            realm.executeTransactionAsync(new Realm.Transaction() {
-                @Override
-                public void execute(Realm realm) {
-                    realm.copyToRealmOrUpdate(video);
-                    iVideoDownloadListener.onVideoDownloaded(position);
-                }
-            });
+            realm.beginTransaction();
+            realm.copyToRealmOrUpdate(video);
+            realm.commitTransaction();
+            iVideoDownloadListener.onVideoDownloaded(position);
             //db.addFeed(video);
-
         return "ok";
     }
 

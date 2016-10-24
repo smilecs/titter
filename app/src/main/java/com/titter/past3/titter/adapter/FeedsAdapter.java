@@ -8,13 +8,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
 import com.titter.past3.titter.MainActivity;
 import com.titter.past3.titter.R;
 import com.titter.past3.titter.model.feedModel;
@@ -60,7 +60,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
     }*/
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
-       public NetworkImageView img;
+       public ImageView img;
         public VideoPlayer vid;
         public TextView txt;
         public RelativeLayout layout;
@@ -73,7 +73,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                   layout = (RelativeLayout) v.findViewById(R.id.layout);
                     progressBar = (ProgressBar) v.findViewById(R.id.progressBar4);
                   vid = (VideoPlayer) v.findViewById(R.id.video);
-
+                    img = (ImageView) v.findViewById(R.id.imageView);
                     vid.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -84,7 +84,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                     });
                     break;
                 default:
-                    img = (NetworkImageView) v.findViewById(R.id.imageView);
+                    img = (ImageView) v.findViewById(R.id.imageView);
                     break;
             }
             txt = (TextView) v.findViewById(R.id.title);
@@ -130,7 +130,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
         switch (Type){
             case VIDEO:
                 //Uri videoUri = Uri.parse(mod.getURL());
-                videoPlayerController.loadVideo(mod, holder.vid, holder.progressBar, position);
+                videoPlayerController.loadVideo(mod, holder.vid, holder.progressBar, position, holder.img);
                 //holder.vid.setVideoURI(videoUri);
                 //holder.vid.seekTo(holder.vid.getCurrentPosition() + 1000);
                 holder.txt.setTypeface(robot);
@@ -138,6 +138,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                 break;
             default:
                 ImageLoader imageLoader = volleySingleton.getsInstance().getImageLoader();
+                //holder.img.setImageUrl(mod.getURL(), imageLoader);
                 imageLoader.get(mod.getURL(), new ImageLoader.ImageListener() {
                     @Override
                     public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
@@ -151,12 +152,9 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                           byte[] byteArray = stream.toByteArray();
                           outStream.write(byteArray, 0, byteArray.length);
                           mod.setURL(file.getAbsolutePath());
-                          realm.executeTransactionAsync(new Realm.Transaction() {
-                              @Override
-                              public void execute(Realm realm) {
-                                    realm.copyToRealmOrUpdate(mod);
-                              }
-                          });
+                          realm.beginTransaction();
+                          realm.copyToRealmOrUpdate(mod);
+                          realm.commitTransaction();
                       }catch (Exception e){
                           e.printStackTrace();
                       }
@@ -167,7 +165,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                         volleyError.printStackTrace();
                     }
                 });
-                Log.d("nulltest", mod.getURL());
+                //Log.d("nulltest", mod.getURL());
                 holder.txt.setTypeface(robot);
                 holder.txt.setText(mod.getTag());
                 break;
