@@ -6,7 +6,6 @@ package com.titter.past3.titter.util;
 
 import android.graphics.Bitmap;
 import android.util.LruCache;
-
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;

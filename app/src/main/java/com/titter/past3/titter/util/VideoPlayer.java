@@ -33,7 +33,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     }
 
     public void loadVideo(String localPath, feedModel video){
-        this.url = localPath;
+        this.url = video.getURL();
         this.video = video;
         isLoaded = true;
         if (this.isAvailable()){
@@ -84,7 +84,8 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     isMpPrepared = true;
-                    mp.setLooping(true);
+                    Log.d(TAG, "prepared");
+                   // mp.setLooping(true);
                     iVideoPreparedListener.onVideoPrepared(video);
                 }
             });
@@ -127,12 +128,20 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     public void changePlayState()
     {
+
         if(mp!=null)
         {
             if(mp.isPlaying())
                 mp.pause();
             else
-                mp.start();
+                try{
+                    mp.setDataSource(url);
+                    mp.prepareAsync();
+                    mp.start();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
         }
 
     }
@@ -140,4 +149,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     public void setOnVideoPreparedListner(IVideoPreparedListener iVideoPreparedListener){
         this.iVideoPreparedListener = iVideoPreparedListener;
     }
+
+
 }

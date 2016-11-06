@@ -27,7 +27,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.titter.past3.titter.adapter.FeedsAdapter;
 import com.titter.past3.titter.model.feedModel;
-import com.titter.past3.titter.util.DbUtility;
 import com.titter.past3.titter.util.FileCache;
 import com.titter.past3.titter.util.IVideoDownloadListener;
 import com.titter.past3.titter.util.TitterService;
@@ -48,13 +47,12 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     private RecyclerView.LayoutManager mlayoutManager;
     ArrayList<feedModel> model;
     String TAG = "TAG";
-    ArrayList<feedModel> videos;
+  //  ArrayList<feedModel> videos;
     VideosDownloader videosDownloader;
     volleySingleton volley;
     RequestQueue requestQueue;
     Realm realm;
     ProgressBar progressBar;
-    DbUtility dbUtility;
     FileCache file;
     DrawerLayout drawer;
     Context context;
@@ -68,7 +66,6 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         Realm.init(this);
         realm = Realm.getDefaultInstance();
         file = new FileCache(this);
-        dbUtility = new DbUtility(this);
         volley = volleySingleton.getsInstance();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -91,32 +88,38 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    Log.d(TAG, "idle");
+                   // Log.d(TAG, "idle");
                     LinearLayoutManager layoutManager = ((LinearLayoutManager) recyclerView.getLayoutManager());
                     int firstVisiblePosition = layoutManager.findFirstVisibleItemPosition();
                     int findFirstCompletelyVisibleItemPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
                     int previousItem = layoutManager.findLastCompletelyVisibleItemPosition();
                     feedModel feed;
+                    try{
+                        if (mAdapter.getData() != null && mAdapter.getData().size() > 0 ) {
+                            if(previousItem != RecyclerView.NO_POSITION && mAdapter.getData().get(previousItem).getViewType().equals("video")){
+                                mAdapter.videoPlayerController.StopPlayback(mAdapter.getData().get(previousItem));
+                                Log.d(TAG, "lastitem" + "  " + mAdapter.getData().get(previousItem));
 
-                    if (mAdapter.getData() != null && mAdapter.getData().size() > 0) {
-                        if(previousItem != RecyclerView.NO_POSITION){
-                            mAdapter.videoPlayerController.StopPlayback(mAdapter.getData().get(previousItem));
-
-                        }
-                            feed = mAdapter.getData().get(findFirstCompletelyVisibleItemPosition);
-                            Log.d(TAG, "top");
-                            Log.d(TAG, feed.getTag());
-                            if (feed.getViewType().equals("video")) {
-                                mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
-                                mAdapter.videoPlayerController.handlePlayBack(feed);
                             }
+                            if(findFirstCompletelyVisibleItemPosition != RecyclerView.NO_POSITION){
+                                feed = mAdapter.getData().get(findFirstCompletelyVisibleItemPosition);
+                                //Log.d(TAG, "top");
+                                Log.d(TAG, feed.getTag());
+                                if (feed.getViewType().equals("video")) {
+                                    mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
+                                    mAdapter.videoPlayerController.handlePlayBack(feed);
+                                }
+                            }
+                        }
+                    }catch (Exception e){
+                      e.printStackTrace();
                     }
 
                 }
             }
         });
         model = new ArrayList<>();
-        videos = new ArrayList<>();
+       // videos = new ArrayList<>();
 
         videosDownloader = new VideosDownloader(context, realm);
         videosDownloader.setOnVideoDownloadListener(this);
@@ -227,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                     realm.executeTransaction(new Realm.Transaction() {
                         @Override
                         public void execute(Realm realm) {
-                            realm.copyToRealm(model);
+                            realm.copyToRealmOrUpdate(model);
                         }
                     });
                    // Reload();

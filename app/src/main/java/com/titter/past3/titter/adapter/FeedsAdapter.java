@@ -3,6 +3,8 @@ package com.titter.past3.titter.adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -63,23 +65,33 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
        public ImageView img;
         public VideoPlayer vid;
         public TextView txt;
-        public RelativeLayout layout;
+        public RelativeLayout layout, videoRel, ImageRel;
         public ProgressBar progressBar;
+        public CardView vidCard;
         public ViewHolder(View v, int Type){
             super(v);
             Log.d("test1", String.valueOf(Type));
             switch (Type){
                 case VIDEO:
                   layout = (RelativeLayout) v.findViewById(R.id.layout);
+                    vidCard = (CardView) v.findViewById(R.id.vidCard);
                     progressBar = (ProgressBar) v.findViewById(R.id.progressBar4);
                   vid = (VideoPlayer) v.findViewById(R.id.video);
+                    ImageRel = (RelativeLayout) v.findViewById(R.id.imageRel);
+                    videoRel = (RelativeLayout) v.findViewById(R.id.videoView);
                     img = (ImageView) v.findViewById(R.id.imageView);
+                    vidCard.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Log.d("Adapter", "clicked");
+                            vid.changePlayState();
+                        }
+                    });
                     vid.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            //vid.start();
-                            Log.d("Adapter", "clicked");
                             vid.changePlayState();
+
                         }
                     });
                     break;
@@ -130,7 +142,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
         switch (Type){
             case VIDEO:
                 //Uri videoUri = Uri.parse(mod.getURL());
-                videoPlayerController.loadVideo(mod, holder.vid, holder.progressBar, position, holder.img);
+                videoPlayerController.loadVideo(mod, holder.vid, holder.progressBar, position, holder.ImageRel, holder.videoRel);
                 //holder.vid.setVideoURI(videoUri);
                 //holder.vid.seekTo(holder.vid.getCurrentPosition() + 1000);
                 holder.txt.setTypeface(robot);
@@ -139,32 +151,43 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
             default:
                 ImageLoader imageLoader = volleySingleton.getsInstance().getImageLoader();
                 //holder.img.setImageUrl(mod.getURL(), imageLoader);
-                imageLoader.get(mod.getURL(), new ImageLoader.ImageListener() {
-                    @Override
-                    public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                      try{
-                          File file = fileCache.getFile(mod.getURL(), "jpg");
-                          Bitmap bm = imageContainer.getBitmap();
-                          holder.img.setImageBitmap(bm);
-                          FileOutputStream outStream = new FileOutputStream(file);
-                          ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                          bm.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                          byte[] byteArray = stream.toByteArray();
-                          outStream.write(byteArray, 0, byteArray.length);
-                          mod.setURL(file.getAbsolutePath());
-                          realm.beginTransaction();
-                          realm.copyToRealmOrUpdate(mod);
-                          realm.commitTransaction();
-                      }catch (Exception e){
-                          e.printStackTrace();
-                      }
-                    }
+                if(!mod.getAvailable().equals("true")){
+                    imageLoader.get(mod.getURL(), new ImageLoader.ImageListener() {
+                        @Override
+                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                            try{
+                                final File file = fileCache.getFile(mod.getURL(), "jpg");
+                               // Log.d("BitmapCount", String.valueOf(bm.getByteCount()));
+                                FileOutputStream outStream = new FileOutputStream(file);
+                                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                imageContainer.getBitmap().compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                byte[] byteArray = stream.toByteArray();
+                                outStream.write(byteArray, 0, byteArray.length);
+                                Log.d("FeedsAdapter", "UnAvailable");
+                                realm.executeTransaction(new Realm.Transaction() {
+                                    @Override
+                                    public void execute(Realm realm) {
+                                        mod.setURL(file.getAbsolutePath());
+                                        mod.setAvailable("true");
+                                    }
+                                });
+                                holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));
+                            }catch (Exception e){
+                                e.printStackTrace();
+                                holder.img.setImageBitmap(imageContainer.getBitmap());
+                            }
+                        }
 
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                        volleyError.printStackTrace();
-                    }
-                });
+                        @Override
+                        public void onErrorResponse(VolleyError volleyError) {
+                            volleyError.printStackTrace();
+                        }
+                    });
+                }else {
+                    holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));
+                    Log.d("FeedsAdapter", "ImageAvailable");
+                }
+
                 //Log.d("nulltest", mod.getURL());
                 holder.txt.setTypeface(robot);
                 holder.txt.setText(mod.getTag());

@@ -8,25 +8,19 @@
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/vidCard"
         android:elevation="4dp"
         android:layout_marginBottom="16dp"
         app:cardElevation="6dp">
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:id="@+id/videoView">
             <com.titter.past3.titter.util.VideoPlayer
                 android:layout_width="match_parent"
                 android:layout_height="310dp"
                 android:id="@+id/video"
                 android:scaleType="centerCrop"
-                android:visibility="gone"
-                android:layout_alignParentStart="true" />
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="310dp"
-                android:id="@+id/imageView"
-                android:scaleType="centerCrop"
-                android:adjustViewBounds="true"
                 android:layout_alignParentStart="true" />
             <TextView
                 android:layout_width="match_parent"
@@ -38,6 +32,19 @@
                 android:paddingBottom="16dp"
                 android:paddingLeft="16dp"
                 android:text="?android:textAppearanceMedium"/>
+            </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageRel">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="310dp"
+                android:id="@+id/imageView"
+                android:scaleType="centerCrop"
+                android:adjustViewBounds="true"
+                android:layout_alignParentStart="true" />
+
 
             <ProgressBar
                 android:layout_width="wrap_content"

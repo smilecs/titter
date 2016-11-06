@@ -3,8 +3,8 @@ package com.titter.past3.titter.util;
 import android.content.Context;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 
 import com.titter.past3.titter.model.feedModel;
 
@@ -24,7 +24,7 @@ public class VideoPlayerController {
     int currentPositionOfItemToPlay = 0;
     feedModel currentPlayingVideo;
     VideosDownloader downloader;
-    ImageView img;
+    RelativeLayout img, vids;
     int position;
     Realm realm;
     private Map<String, VideoPlayer> videos = Collections.synchronizedMap(new WeakHashMap<String, VideoPlayer>());
@@ -36,9 +36,10 @@ public class VideoPlayerController {
         fileCache = new FileCache(context);
         this.realm = realm;
     }
-    public void loadVideo(feedModel video, VideoPlayer videoPlayer, ProgressBar progressBar, int position, ImageView img){
+    public void loadVideo(feedModel video, VideoPlayer videoPlayer, ProgressBar progressBar, int position, RelativeLayout img, RelativeLayout vid){
         videos.put(video.getIndex(), videoPlayer);
         this.img = img;
+        this.vids = vid;
         videosSpinner.put(video.getIndex(), progressBar);
         this.position = position;
         handlePlayBack(video);
@@ -62,43 +63,32 @@ public class VideoPlayerController {
                 final VideoPlayer videoPlayer2 = videos.get(video.getIndex());
                 //String localPath = fileCache.getFile(video.getURL()).getAbsolutePath();
                 String localPath = video.getURL();
-                if(!videoPlayer2.isLoaded){
                     Log.d(TAG, localPath);
+
                     videoPlayer2.loadVideo(localPath, video);
                     videoPlayer2.setOnVideoPreparedListner(new IVideoPreparedListener() {
                         @Override
                         public void onVideoPrepared(feedModel vid) {
                             Log.d(TAG, "contains yes2");
+                            Log.d(TAG, vid.getIndex());
                             if(vid.getIndex().equals(video.getIndex())){
-                                Log.d(TAG, "contains yes2");
+                                Log.d(TAG, "equals");
                                 if(currentPlayingVideo != null && currentPlayingVideo != video){
                                     Log.d(TAG, "contains yes3");
                                     VideoPlayer videoPlayer1 = videos.get(currentPlayingVideo.getIndex());
                                     videoPlayer1.pausePlay();
                                 }
-                                img.setVisibility(View.GONE);
-                                videoPlayer2.setVisibility(View.VISIBLE);
-                                downloader.downloadVideo(video, position);
-                                videoPlayer2.mp.start();
+                                if(!video.getAvailable().equals("true")){
+                                    downloader.downloadVideo(video, position);
+                                }
                                 currentPlayingVideo = video;
+                                img.setVisibility(View.GONE);
+                                vids.setVisibility(View.VISIBLE);
+                                videoPlayer2.startPlay();
                             }
                         }
                     });
-                }
-                else {
-                    if(currentPlayingVideo != null){
-                        Log.d(TAG, "contains yes2");
-                        VideoPlayer videoPlayer1 = videos.get(currentPlayingVideo.getIndex());
-                        videoPlayer1.pausePlay();
-                    }
-                    boolean isStarted = videoPlayer2.startPlay();
-                    if(isStarted){
-                        img.setVisibility(View.GONE);
-                        videoPlayer2.setVisibility(View.VISIBLE);
-                        downloader.downloadVideo(video, position);
-                    }
-                    currentPlayingVideo = video;
-                }
+
             }
 
 
@@ -106,7 +96,7 @@ public class VideoPlayerController {
 
     public void StopPlayback(feedModel video){
         if(video.getViewType().equals("video")){
-            videos.get(video.getIndex()).stopPlay();
+            videos.get(video.getIndex()).changePlayState();
         }
     }
 

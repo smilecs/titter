@@ -4,29 +4,27 @@
     android:layout_height="match_parent"
     android:background="@drawable/back"
     tools:context="com.titter.past3.titter.About">
-
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
             android:src="@mipmap/ic_launcher"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="96dp"
             android:id="@+id/imageView2" />
+
         <TextView
-            android:id="@+id/fullscreen_content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="2016 Titter Inc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tet"
             android:textColor="#fff"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textAlignment="center"
+            android:id="@+id/textView2"
+            android:layout_below="@+id/rg"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="24dp" />
 
         <TextView
             android:id="@+id/rg"
@@ -34,13 +32,24 @@
             android:layout_height="wrap_content"
             android:text="All rights reserved"
             android:textColor="#fff"
+            android:layout_marginTop="99dp"
             android:layout_below="@+id/imageView2"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:id="@+id/fullscreen_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:background="@color/black_overlay"
+            android:backgroundTint="@color/black_overlay"
+            android:text="2016 Titter Inc"
+            android:textColor="#fff"
+            android:textSize="16sp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="135dp" />
+            android:layout_centerVertical="true"
+             />
     </RelativeLayout>
-
-
-
-
-
 </FrameLayout>

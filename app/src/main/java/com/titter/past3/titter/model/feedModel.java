@@ -16,7 +16,7 @@ public class feedModel extends RealmObject implements Serializable{
     String WebUrl;
     String Tag;
     String index;
-    String available;
+    String available = "";
     String playing;
     public String getId() {
         return id;
