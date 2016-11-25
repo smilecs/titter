@@ -10,6 +10,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -30,12 +31,13 @@ public class VideosDownloader {
     public VideosDownloader(Context context, Realm realm){
         this.context = context;
         fileCache = new FileCache(context);
+        iVideoDownloadListener = (IVideoDownloadListener) context;
         downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         this.realm = realm;
 
     }
 
-    public String downloadVideo(final feedModel video, final int position)
+    public String downloadVideo(final feedModel video, final int position) throws MalformedURLException
     {
 
 
@@ -44,6 +46,8 @@ public class VideosDownloader {
             type = "mp4";
         }
         final File file = fileCache.getFile(video.getURL(), type);
+
+                final URL url = new URL(video.getURL());
                 Thread tm = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -51,7 +55,7 @@ public class VideosDownloader {
                         {
                             Log.d(TAG, "started22");
 
-                       URL url = new URL(video.getURL());
+
                         long startTime = System.currentTimeMillis();
                         URLConnection ucon = null;
                         ucon = url.openConnection();
@@ -69,17 +73,20 @@ public class VideosDownloader {
                             outStream.flush();
                             outStream.close();
                             inStream.close();
+                            iVideoDownloadListener.onVideoDownloaded(position, file.getAbsolutePath());
+
 
                     }
                         catch (Exception e) {
                             e.printStackTrace();
-                            video.setAvailable("false");
+                            //video.setAvailable("false");
                         }
 
 
                     }
                 });
                 tm.start();
+
                 //clean up
 
               //  video.setAvailable("true");
@@ -87,17 +94,14 @@ public class VideosDownloader {
 
 
             Log.d(TAG, file.getAbsolutePath());
-        if(video.getAvailable().equals("true")){
-            realm.executeTransactionAsync(new Realm.Transaction() {
+            /*realm.executeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
                     video.setURL(file.getAbsolutePath());
+                    realm.copyToRealmOrUpdate(video);
                 }
-            });
-
-        }
-
-            iVideoDownloadListener.onVideoDownloaded(position);
+            });*/
+            // iVideoDownloadListener.onVideoDownloaded(position);
             //db.addFeed(video);
         return "ok";
     }

@@ -78,6 +78,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         mp = new MediaPlayer();
         mp.setSurface(this.surface);
         try{
+            Log.d(TAG, url);
             mp.setDataSource(url);
             mp.prepareAsync();
             mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -122,26 +123,23 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     public void stopPlay()
     {
-        if(mp!=null)
+        if(mp!=null && mp.isPlaying())
             mp.stop();
     }
 
     public void changePlayState()
     {
-
-        if(mp!=null)
+        Log.d(TAG, "state:" + String.valueOf(mp.isPlaying()));
+        if(mp!=null && mp.isPlaying())
         {
-            if(mp.isPlaying())
-                mp.pause();
-            else
-                try{
-                    mp.setDataSource(url);
-                    mp.prepareAsync();
-                    mp.start();
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
+            mp.stop();
 
+        }  else {
+            if(this.isAvailable()){
+                mp.release();
+               //mp.reset();
+                prepareVideo(getSurfaceTexture());
+            }
         }
 
     }

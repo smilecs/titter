@@ -87,13 +87,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                             vid.changePlayState();
                         }
                     });
-                    vid.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            vid.changePlayState();
 
-                        }
-                    });
                     break;
                 default:
                     img = (ImageView) v.findViewById(R.id.imageView);
@@ -169,6 +163,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                                     public void execute(Realm realm) {
                                         mod.setURL(file.getAbsolutePath());
                                         mod.setAvailable("true");
+                                        realm.copyToRealmOrUpdate(mod);
                                     }
                                 });
                                 holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));

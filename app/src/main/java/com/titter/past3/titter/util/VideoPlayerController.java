@@ -8,6 +8,7 @@ import android.widget.RelativeLayout;
 
 import com.titter.past3.titter.model.feedModel;
 
+import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -42,7 +43,7 @@ public class VideoPlayerController {
         this.vids = vid;
         videosSpinner.put(video.getIndex(), progressBar);
         this.position = position;
-        handlePlayBack(video);
+        //handlePlayBack(video);
     }
 
     public void handlePlayBack(feedModel video){
@@ -58,6 +59,7 @@ public class VideoPlayerController {
 
     private void playVideo(final feedModel video){
             Log.d(TAG, "currentplayin no");
+        Log.d(TAG, video.getURL());
             if(videos.containsKey(video.getIndex())){
                 Log.d(TAG, "contains yes");
                 final VideoPlayer videoPlayer2 = videos.get(video.getIndex());
@@ -79,7 +81,14 @@ public class VideoPlayerController {
                                     videoPlayer1.pausePlay();
                                 }
                                 if(!video.getAvailable().equals("true")){
-                                    downloader.downloadVideo(video, position);
+                                    Log.d(TAG, "Downloading");
+                                    try{
+                                        downloader.downloadVideo(video, position);
+                                    }
+                                    catch (MalformedURLException u){
+                                        u.printStackTrace();
+                                    }
+
                                 }
                                 currentPlayingVideo = video;
                                 img.setVisibility(View.GONE);
@@ -96,7 +105,7 @@ public class VideoPlayerController {
 
     public void StopPlayback(feedModel video){
         if(video.getViewType().equals("video")){
-            videos.get(video.getIndex()).changePlayState();
+            videos.get(video.getIndex()).stopPlay();
         }
     }
 

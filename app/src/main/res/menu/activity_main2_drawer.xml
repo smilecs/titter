@@ -4,13 +4,10 @@
         <item android:id="@+id/home"
             android:title="HOME" />
 
-        <item android:id="@+id/invite"
-            android:title="INVITE" />
-
         <item android:id="@+id/about"
             android:title="ABOUT US"/>
 
         <item android:id="@+id/other"
-            android:title="HELP" />
+            android:title="FAQ" />
     </group>
 </menu>
