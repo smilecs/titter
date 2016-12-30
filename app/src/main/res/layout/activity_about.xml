@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/back"
     tools:context="com.titter.past3.titter.About">
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -32,7 +33,7 @@
             android:layout_height="wrap_content"
             android:text="All rights reserved"
             android:textColor="#fff"
-            android:layout_marginTop="99dp"
+            android:layout_marginTop="120dp"
             android:layout_below="@+id/imageView2"
             android:layout_centerHorizontal="true" />
 
@@ -46,10 +47,33 @@
             android:text="2016 Titter Inc"
             android:textColor="#fff"
             android:textSize="16sp"
+            android:layout_marginTop="60dp"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
+           android:layout_below="@+id/imageView2"
              />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/team"
+            android:layout_below="@+id/textView2"
+            android:text="Team"
+            android:textColor="#fff"
+            android:clickable="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="26dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Felix Ekenjoku CEO"
+
+            android:layout_alignTop="@+id/team"
+            android:layout_alignEnd="@+id/fullscreen_content"
+            android:layout_marginTop="31dp"
+            android:visibility="gone"
+            android:id="@+id/ceo"
+            android:textColor="#fff"/>
     </RelativeLayout>
 </FrameLayout>

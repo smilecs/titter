@@ -39,7 +39,7 @@ import io.realm.Realm;
 public class MainActivity extends AppCompatActivity implements IVideoDownloadListener, NavigationView.OnNavigationItemSelectedListener {
     private RecyclerView mRecyclerView;
     private FeedsAdapter mAdapter;
-    private RecyclerView.LayoutManager mlayoutManager;
+    private LinearLayoutManager mlayoutManager;
     ArrayList<feedModel> model;
     String TAG = "TAG";
   //  ArrayList<feedModel> videos;
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Refresh();
+                Refresh("1");
             }
         });
         mlayoutManager = new LinearLayoutManager(this);
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                     try{
                         if (mAdapter.getData() != null && mAdapter.getData().size() > 0 ) {
                             if(previousItem != RecyclerView.NO_POSITION && mAdapter.getData().get(previousItem).getViewType().equals("video")){
-                                mAdapter.videoPlayerController.StopPlayback(mAdapter.getData().get(previousItem));
+                                mAdapter.videoPlayerController.handlePlayBack(mAdapter.getData().get(previousItem));
                                 Log.d(TAG, "lastitem" + "  " + mAdapter.getData().get(previousItem));
 
                             }
@@ -112,6 +112,15 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                 }
             }
         });
+        mRecyclerView.addOnScrollListener(new EndlessRecyclerViewScrollListener(mlayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                if(totalItemsCount > 49){
+                    Refresh(String.valueOf(page));
+                }
+            }
+        });
+
         model = new ArrayList<>();
        // videos = new ArrayList<>();
 
@@ -136,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+       // getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -148,10 +157,6 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
 
         if (id == R.id.other) {
             Intent i = new Intent(this, others.class);
@@ -208,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         super.onResume();
     }
 
-    public void Refresh() {
+    public void Refresh(String page) {
         refresh.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, Utils.URL, null, new Response.Listener<JSONObject>() {
@@ -279,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
 
     public void Reload(){
         if(realm.where(feedModel.class).findAll().size() < 1){
-           Refresh();
+           Refresh("1");
             Log.d("Mainactivity", "reload2");
         }else {
             Log.d("Mainactivity", "reload");
@@ -299,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         if (activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
             //boolean isMOBILE = activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
             // message = "Titter Service connected";
-            Refresh();
+            Refresh("1");
         }else{
             Reload();
         }

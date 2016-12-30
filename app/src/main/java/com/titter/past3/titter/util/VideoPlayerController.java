@@ -67,7 +67,7 @@ public class VideoPlayerController {
                 String localPath = video.getURL();
                     Log.d(TAG, localPath);
 
-                    videoPlayer2.loadVideo(localPath, video);
+                    videoPlayer2.loadVideo(localPath, video, img);
                     videoPlayer2.setOnVideoPreparedListner(new IVideoPreparedListener() {
                         @Override
                         public void onVideoPrepared(feedModel vid) {
@@ -105,6 +105,7 @@ public class VideoPlayerController {
 
     public void StopPlayback(feedModel video){
         if(video.getViewType().equals("video")){
+            img.setVisibility(View.VISIBLE);
             videos.get(video.getIndex()).stopPlay();
         }
     }

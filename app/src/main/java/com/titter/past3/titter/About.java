@@ -9,6 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
+import android.widget.TextView;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -94,13 +95,17 @@ public class About extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
+        final TextView ceo = (TextView) findViewById(R.id.ceo);
+        TextView team = (TextView) findViewById(R.id.team);
+        team.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ceo.setVisibility(View.VISIBLE);
+            }
+        });
         mVisible = true;
 
-
-
         // Set up the user interaction to manually show or hide the system UI.
-
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.

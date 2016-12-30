@@ -166,6 +166,11 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                                         realm.copyToRealmOrUpdate(mod);
                                     }
                                 });
+                                //holder.img.setAdjustViewBounds(true);
+                                holder.img.getLayoutParams().height = imageContainer.getBitmap().getHeight();
+                                if(imageContainer.getBitmap().getHeight() < 80){
+                                    holder.img.getLayoutParams().height = 320;
+                                }
                                 holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));
                             }catch (Exception e){
                                 e.printStackTrace();

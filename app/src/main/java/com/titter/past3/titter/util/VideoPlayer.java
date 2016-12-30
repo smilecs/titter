@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.widget.RelativeLayout;
 
 import com.titter.past3.titter.model.feedModel;
 
@@ -24,6 +25,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     boolean isLoaded;
     boolean isMpPrepared;
     IVideoPreparedListener iVideoPreparedListener;
+    RelativeLayout img;
     public VideoPlayer(Context context){
         super(context);
     }
@@ -32,9 +34,10 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         super(context, attrs);
     }
 
-    public void loadVideo(String localPath, feedModel video){
+    public void loadVideo(String localPath, feedModel video, RelativeLayout img){
         this.url = video.getURL();
         this.video = video;
+        this.img = img;
         isLoaded = true;
         if (this.isAvailable()){
             prepareVideo(getSurfaceTexture());
@@ -86,7 +89,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
                 public void onPrepared(MediaPlayer mp) {
                     isMpPrepared = true;
                     Log.d(TAG, "prepared");
-                   // mp.setLooping(true);
+                    mp.setLooping(true);
                     iVideoPreparedListener.onVideoPrepared(video);
                 }
             });
@@ -119,12 +122,14 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
     {
         if(mp!=null)
             mp.pause();
+        img.setVisibility(VISIBLE);
     }
 
     public void stopPlay()
     {
         if(mp!=null && mp.isPlaying())
             mp.stop();
+        img.setVisibility(VISIBLE);
     }
 
     public void changePlayState()
@@ -133,11 +138,13 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         if(mp!=null && mp.isPlaying())
         {
             mp.stop();
+            img.setVisibility(VISIBLE);
 
         }  else {
             if(this.isAvailable()){
-                mp.release();
+               // mp.release();
                //mp.reset();
+                img.setVisibility(GONE);
                 prepareVideo(getSurfaceTexture());
             }
         }
