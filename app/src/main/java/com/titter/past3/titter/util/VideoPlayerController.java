@@ -28,20 +28,24 @@ public class VideoPlayerController {
     RelativeLayout img, vids;
     int position;
     Realm realm;
-    private Map<String, VideoPlayer> videos = Collections.synchronizedMap(new WeakHashMap<String, VideoPlayer>());
-    private Map<String, ProgressBar> videosSpinner = Collections.synchronizedMap(new WeakHashMap<String, ProgressBar>());
+    private Map<String, VideoPlayer> videos;
+    private Map<String, ProgressBar> videosSpinner;
 
     public VideoPlayerController(Context context, Realm realm) {
         this.context = context;
         downloader = new VideosDownloader(context, realm);
         fileCache = new FileCache(context);
         this.realm = realm;
+        videos = Collections.synchronizedMap(new WeakHashMap<String, VideoPlayer>());
+        videosSpinner = Collections.synchronizedMap(new WeakHashMap<String, ProgressBar>());
+        Log.d(TAG, "created");
     }
     public void loadVideo(feedModel video, VideoPlayer videoPlayer, ProgressBar progressBar, int position, RelativeLayout img, RelativeLayout vid){
-        videos.put(video.getIndex(), videoPlayer);
         this.img = img;
         this.vids = vid;
+        Log.d(TAG, "loaded");
         videosSpinner.put(video.getIndex(), progressBar);
+        videos.put(video.getIndex(), videoPlayer);
         this.position = position;
         //handlePlayBack(video);
     }
@@ -98,6 +102,11 @@ public class VideoPlayerController {
                         }
                     });
 
+            }else {
+                    Log.d(TAG, "else");
+                for(int i = 0; i < videos.size(); i++){
+                 Log.d(TAG, "avail");
+                }
             }
 
 

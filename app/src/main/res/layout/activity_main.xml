@@ -6,13 +6,11 @@ android:layout_width="match_parent" android:layout_height="match_parent"
 android:fitsSystemWindows="true" tools:openDrawer="start"
 >
 
-    <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        tools:context="com.titter.past3.titter.MainActivity">
+        >
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -33,34 +31,8 @@ android:fitsSystemWindows="true" tools:openDrawer="start"
 
             </android.support.design.widget.AppBarLayout>
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/cardList"
-                android:layout_marginTop="6dp"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/appbar"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-
-            <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:id="@+id/progressBar"
-                android:indeterminate="true"/>
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/button"
-                android:layout_below="@+id/progressBar"
-                android:layout_centerHorizontal="true"
-                android:text="Refresh"
-                android:visibility="gone"/>
-
-
+            <include layout="@layout/swipelist"/>
         </RelativeLayout>
-
 
     </android.support.design.widget.CoordinatorLayout>
 

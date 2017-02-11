@@ -21,6 +21,7 @@ import com.titter.past3.titter.MainActivity;
 import com.titter.past3.titter.R;
 import com.titter.past3.titter.model.feedModel;
 import com.titter.past3.titter.util.FileCache;
+import com.titter.past3.titter.util.Utils;
 import com.titter.past3.titter.util.VideoPlayer;
 import com.titter.past3.titter.util.VideoPlayerController;
 import com.titter.past3.titter.util.volleySingleton;
@@ -71,12 +72,12 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
         public ViewHolder(View v, int Type){
             super(v);
             Log.d("test1", String.valueOf(Type));
+            progressBar = (ProgressBar) v.findViewById(R.id.progressBar4);
             switch (Type){
                 case VIDEO:
                   layout = (RelativeLayout) v.findViewById(R.id.layout);
                     vidCard = (CardView) v.findViewById(R.id.vidCard);
-                    progressBar = (ProgressBar) v.findViewById(R.id.progressBar4);
-                  vid = (VideoPlayer) v.findViewById(R.id.video);
+                    vid = (VideoPlayer) v.findViewById(R.id.video);
                     ImageRel = (RelativeLayout) v.findViewById(R.id.imageRel);
                     videoRel = (RelativeLayout) v.findViewById(R.id.videoView);
                     img = (ImageView) v.findViewById(R.id.imageView);
@@ -94,9 +95,6 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                     break;
             }
             txt = (TextView) v.findViewById(R.id.title);
-
-
-
         }
     }
 
@@ -125,7 +123,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
         Typeface robot = Typeface.createFromAsset(context.getAssets(),
                 "fonts/Roboto-Medium.ttf"); //use this.getAssets if you are calling from an Activity
         try{
-            if(mod.getViewType().equals("video")){
+            if(mod.getViewType().equals(Utils.VIDEOTEXT)){
                 Type = VIDEO;
             }
         }
@@ -169,23 +167,29 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                                 //holder.img.setAdjustViewBounds(true);
                                 holder.img.getLayoutParams().height = imageContainer.getBitmap().getHeight();
                                 if(imageContainer.getBitmap().getHeight() < 80){
-                                    holder.img.getLayoutParams().height = 320;
+                                    holder.img.getLayoutParams().height = 280;
                                 }
+                                holder.progressBar.setVisibility(View.GONE);
                                 holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));
                             }catch (Exception e){
                                 e.printStackTrace();
                                 holder.img.setImageBitmap(imageContainer.getBitmap());
+                                holder.progressBar.setVisibility(View.GONE);
+
+
                             }
                         }
 
                         @Override
                         public void onErrorResponse(VolleyError volleyError) {
                             volleyError.printStackTrace();
+                            holder.progressBar.setVisibility(View.GONE);
                         }
                     });
                 }else {
                     holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));
                     Log.d("FeedsAdapter", "ImageAvailable");
+                    holder.progressBar.setVisibility(View.GONE);
                 }
 
                 //Log.d("nulltest", mod.getURL());

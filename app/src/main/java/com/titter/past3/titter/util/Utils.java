@@ -13,8 +13,9 @@ public class Utils {
     //public static String URL = "http://192.168.43.126:8080/get";
     public static String URL = "http://titter.herokuapp.com/get";
     //public static String URL = "http://titter.past3.com.ng/api/posts";
+    public static String VIDEOTEXT = "video";
 
-    public static String nreadPreferences(Context context, String name){
+    public static String readPreferences(Context context, String name){
         SharedPreferences sharedPreferences = context.getSharedPreferences(context.getString(R.string.save), context.MODE_PRIVATE);
         return sharedPreferences.getString(name, "false");
     }

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -46,12 +47,14 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     VideosDownloader videosDownloader;
     volleySingleton volley;
     RequestQueue requestQueue;
+    SwipeRefreshLayout swipeRefreshLayout;
     Realm realm;
     ProgressBar progressBar;
     FileCache file;
     DrawerLayout drawer;
     Context context;
     Button refresh;
+    Boolean next = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +67,19 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         volley = volleySingleton.getsInstance();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeRefreshLayout.setRefreshing(true);
+                Refresh("1");
+            }
+        });
+        swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+
         mRecyclerView = (RecyclerView) findViewById(R.id.cardList);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         refresh = (Button) findViewById(R.id.button);
@@ -91,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                     feedModel feed;
                     try{
                         if (mAdapter.getData() != null && mAdapter.getData().size() > 0 ) {
-                            if(previousItem != RecyclerView.NO_POSITION && mAdapter.getData().get(previousItem).getViewType().equals("video")){
+                            if(previousItem != RecyclerView.NO_POSITION && mAdapter.getData().get(previousItem).getViewType().equals(Utils.VIDEOTEXT)){
                                 mAdapter.videoPlayerController.handlePlayBack(mAdapter.getData().get(previousItem));
                                 Log.d(TAG, "lastitem" + "  " + mAdapter.getData().get(previousItem));
 
@@ -99,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                             if(findFirstCompletelyVisibleItemPosition != RecyclerView.NO_POSITION){
                                 feed = mAdapter.getData().get(findFirstCompletelyVisibleItemPosition);
                                 Log.d(TAG, feed.getTag());
-                                if (feed.getViewType().equals("video")) {
+                                if (feed.getViewType().equals(Utils.VIDEOTEXT)) {
                                     mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
                                     mAdapter.videoPlayerController.handlePlayBack(feed);
                                 }
@@ -114,8 +130,8 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         });
         mRecyclerView.addOnScrollListener(new EndlessRecyclerViewScrollListener(mlayoutManager) {
             @Override
-            public void onLoadMore(int page, int totalItemsCount) {
-                if(totalItemsCount > 49){
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                if(next){
                     Refresh(String.valueOf(page));
                 }
             }
@@ -216,11 +232,12 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     public void Refresh(String page) {
         refresh.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, Utils.URL, null, new Response.Listener<JSONObject>() {
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, Utils.URL+"?p="+page, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject jsonObject) {
                 Log.d("MainActivity", "download");
                 JSONArray array;
+                swipeRefreshLayout.setRefreshing(false);
                 file.clear();
                 realm.executeTransaction(new Realm.Transaction() {
                     @Override
@@ -235,10 +252,12 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                     array = jsonObject.getJSONArray("Data");
                     model.clear();
                     Log.d("MainActivity", array.toString());
+                    Log.d("MainActivity", jsonObject.toString());
+                    next = jsonObject.getBoolean("Next");
+
                     for (int i = 0; i < array.length(); i++) {
                         final feedModel mode = new feedModel();
                         try {
-
                             mode.setId(array.getJSONObject(i).getString("File"));
                             mode.setTag(array.getJSONObject(i).getString("Description"));
                             mode.setViewType(array.getJSONObject(i).getString("Type"));

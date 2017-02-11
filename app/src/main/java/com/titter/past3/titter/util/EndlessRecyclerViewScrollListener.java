@@ -59,10 +59,10 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
             int[] lastVisibleItemPositions = ((StaggeredGridLayoutManager) mLayoutManager).findLastVisibleItemPositions(null);
             // get maximum element within the list
             lastVisibleItemPosition = getLastVisibleItem(lastVisibleItemPositions);
-        } else if (mLayoutManager instanceof LinearLayoutManager) {
-            lastVisibleItemPosition = ((LinearLayoutManager) mLayoutManager).findLastVisibleItemPosition();
         } else if (mLayoutManager instanceof GridLayoutManager) {
             lastVisibleItemPosition = ((GridLayoutManager) mLayoutManager).findLastVisibleItemPosition();
+        } else if (mLayoutManager instanceof LinearLayoutManager) {
+            lastVisibleItemPosition = ((LinearLayoutManager) mLayoutManager).findLastVisibleItemPosition();
         }
 
         // If the total item count is zero and the previous isn't, assume the
@@ -88,12 +88,20 @@ public abstract class EndlessRecyclerViewScrollListener extends RecyclerView.OnS
         // threshold should reflect how many total columns there are too
         if (!loading && (lastVisibleItemPosition + visibleThreshold) > totalItemCount) {
             currentPage++;
-            onLoadMore(currentPage, totalItemCount);
+            onLoadMore(currentPage, totalItemCount, view);
             loading = true;
         }
     }
 
+    // Call this method whenever performing new searches
+    public void resetState() {
+        this.currentPage = this.startingPageIndex;
+        this.previousTotalItemCount = 0;
+        this.loading = true;
+    }
+
     // Defines the process for actually loading more data based on page
-    public abstract void onLoadMore(int page, int totalItemsCount);
+    public abstract void onLoadMore(int page, int totalItemsCount, RecyclerView view);
 
 }
+

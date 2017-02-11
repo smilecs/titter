@@ -42,7 +42,7 @@ public class VideosDownloader {
 
 
         String type = "jpg";
-        if(video.getViewType().equals("video")){
+        if(video.getViewType().equals(Utils.VIDEOTEXT)){
             type = "mp4";
         }
         final File file = fileCache.getFile(video.getURL(), type);
