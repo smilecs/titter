@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
             }
         });
         mlayoutManager = new LinearLayoutManager(this);
-        mAdapter = new FeedsAdapter(context, this, realm.where(feedModel.class).findAllAsync());
+        mAdapter = new FeedsAdapter(context, this, realm.where(feedModel.class).findAll());
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mlayoutManager);
         mRecyclerView.setAdapter(mAdapter);
@@ -305,13 +305,6 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         if(realm.where(feedModel.class).findAll().size() < 1){
            Refresh("1");
             Log.d("Mainactivity", "reload2");
-        }else {
-            Log.d("Mainactivity", "reload");
-            mAdapter = new FeedsAdapter(context, this, realm.where(feedModel.class).findAllAsync());
-            mRecyclerView.setAdapter(mAdapter);
-            mAdapter.notifyDataSetChanged();
-            progressBar.setVisibility(View.GONE);
-
         }
     }
 

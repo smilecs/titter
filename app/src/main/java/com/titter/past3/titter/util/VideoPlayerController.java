@@ -46,6 +46,7 @@ public class VideoPlayerController {
         Log.d(TAG, "loaded");
         videosSpinner.put(video.getIndex(), progressBar);
         videos.put(video.getIndex(), videoPlayer);
+        Log.d(TAG, String.valueOf(videos.size()));
         this.position = position;
         //handlePlayBack(video);
     }
@@ -104,9 +105,6 @@ public class VideoPlayerController {
 
             }else {
                     Log.d(TAG, "else");
-                for(int i = 0; i < videos.size(); i++){
-                 Log.d(TAG, "avail");
-                }
             }
 
 

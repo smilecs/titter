@@ -134,7 +134,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     public void changePlayState()
     {
-//        Log.d(TAG, "state:" + String.valueOf(mp.isPlaying()));
+        Log.d(TAG, "state:" + String.valueOf(mp.isPlaying()));
         if(mp!=null && mp.isPlaying())
         {
             mp.pause();
@@ -142,8 +142,6 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
         }  else {
             if(this.isAvailable()){
-               // mp.release();
-               //mp.reset();
                 img.setVisibility(GONE);
                 //prepareVideo(getSurfaceTexture());
                 mp.start();
