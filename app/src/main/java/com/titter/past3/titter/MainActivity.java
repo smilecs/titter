@@ -174,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                             mode.setIndex(String.valueOf(i));
                             if (mode.getViewType().equals("video")) {
                                 videos.add(mode);
-                            }te
+                            }
 
                         } catch (Throwable je) {
                             je.printStackTrace();
@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                     }
                     progressBar.setVisibility(View.GONE);
                     mAdapter.notifyDataSetChanged();
-                    videosDownloader.startVideosDownloading(videos);
+                    //videosDownloader.startVideosDownloading(videos);
                     mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                         @Override
                         public void onScrollStateChanged(RecyclerView recyclerView, int newState) {

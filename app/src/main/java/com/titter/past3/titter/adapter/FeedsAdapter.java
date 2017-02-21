@@ -113,7 +113,7 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
         switch (Type){
             case VIDEO:
                 //Uri videoUri = Uri.parse(mod.getURL());
-                videoPlayerController.loadVideo(mod, holder.vid,holder.progressBar );
+                videoPlayerController.loadVideo(mod, holder.vid,holder.progressBar);
               //  holder.vid.setVideoURI(videoUri);
                 //holder.vid.seekTo(holder.vid.getCurrentPosition() + 1000);
                 holder.txt.setTypeface(robot);

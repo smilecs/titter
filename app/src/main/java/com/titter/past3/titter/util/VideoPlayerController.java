@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.titter.past3.titter.model.feedModel;
 
 import java.util.Collections;
@@ -34,13 +35,13 @@ public class VideoPlayerController {
     }
 
     public void handlePlayBack(feedModel video){
-        if(isVideoDownloaded(video)){
+       // if(isVideoDownloaded(video)){
             Log.d(TAG, "downloaded");
             if(isVideoVisible(video)){
                 Log.d(TAG, "visible");
                 playVideo(video);
             }
-        }
+        //}
     }
 
     private void playVideo(final feedModel video){
@@ -50,7 +51,8 @@ public class VideoPlayerController {
                 Log.d(TAG, "contains yes");
                 final VideoPlayer videoPlayer2 = videos.get(video.getIndex());
 
-                String localPath = fileCache.getFile(video.getURL()).getAbsolutePath();
+                //String localPath = fileCache.getFile(video.getURL()).getAbsolutePath();
+                String localPath = getProxy().getProxyUrl(video.getURL());
                 if(!videoPlayer2.isLoaded){
                     Log.d(TAG, localPath);
                     videoPlayer2.loadVideo(localPath, video);
@@ -155,6 +157,10 @@ public class VideoPlayerController {
             return true;
         }
         return false;
+    }
+    private HttpProxyCacheServer getProxy() {
+        // should return single instance of HttpProxyCacheServer shared for whole app.
+        return Application.getProxy(context);
     }
 
 }
