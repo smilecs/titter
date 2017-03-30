@@ -14,9 +14,6 @@ android:fitsSystemWindows="true" tools:openDrawer="start"
         android:fitsSystemWindows="true"
         tools:context="com.titter.past3.titter.MainActivity">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
 
             <android.support.design.widget.AppBarLayout
                 android:layout_width="match_parent"
@@ -33,14 +30,19 @@ android:fitsSystemWindows="true" tools:openDrawer="start"
 
             </android.support.design.widget.AppBarLayout>
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/cardList"
-                android:layout_marginTop="6dp"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/appbar"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/swipeRefresh"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/cardList"
+                    android:layout_marginTop="6dp"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/appbar"
+                    app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+            </android.support.v4.widget.SwipeRefreshLayout>
             <ProgressBar
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -58,8 +60,6 @@ android:fitsSystemWindows="true" tools:openDrawer="start"
                 android:text="Refresh"
                 android:visibility="gone"/>
 
-
-        </RelativeLayout>
 
 
     </android.support.design.widget.CoordinatorLayout>

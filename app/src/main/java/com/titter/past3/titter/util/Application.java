@@ -24,7 +24,7 @@ public class Application extends android.app.Application{
     }
 
     private HttpProxyCacheServer newProxy() {
-        return new HttpProxyCacheServer(this);
+        return new HttpProxyCacheServer(sInstance);
     }
     public static Application getsInstance(){
         return sInstance;

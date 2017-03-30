@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,6 +26,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.titter.past3.titter.adapter.FeedsAdapter;
 import com.titter.past3.titter.model.feedModel;
+import com.titter.past3.titter.util.EndlessRecyclerViewScrollListener;
 import com.titter.past3.titter.util.IVideoDownloadListener;
 import com.titter.past3.titter.util.TitterService;
 import com.titter.past3.titter.util.Utils;
@@ -39,7 +41,8 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements IVideoDownloadListener, NavigationView.OnNavigationItemSelectedListener{
     private RecyclerView mRecyclerView;
     private FeedsAdapter mAdapter;
-    private RecyclerView.LayoutManager mlayoutManager;
+    private LinearLayoutManager mlayoutManager;
+    SwipeRefreshLayout swipeRefreshLayout;
     ArrayList<feedModel> model;
     String TAG = "TAG";
     ArrayList<feedModel> videos;
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     DrawerLayout drawer;
     Context context;
     Button refresh;
+    Boolean next = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,11 +65,25 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         setSupportActionBar(toolbar);
         mRecyclerView = (RecyclerView) findViewById(R.id.cardList);
         progressBar= (ProgressBar) findViewById(R.id.progressBar);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefresh);
+        swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light
+        );
+        //swipeRefreshLayout.setColorSchemeColors();
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeRefreshLayout.setRefreshing(true);
+                Refresh("1");
+            }
+        });
         refresh = (Button) findViewById(R.id.button);
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Refresh();
+                Refresh("1");
             }
         });
         mlayoutManager = new LinearLayoutManager(this);
@@ -79,6 +97,17 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
 
 //            mAdapter.notifyDataSetChanged();
         mRecyclerView.setAdapter(mAdapter);
+
+        mRecyclerView.addOnScrollListener(new EndlessRecyclerViewScrollListener(mlayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+                Log.d(TAG, String.valueOf(page));
+                if(next){
+                    Refresh(String.valueOf(page));
+                }
+
+            }
+        });
         drawer = (DrawerLayout)findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -88,17 +117,8 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         nav.setNavigationItemSelectedListener(this);
         Intent i = new Intent(this, TitterService.class);
         startService(i);
-
-
-
-
         requestQueue = volley.getmRequestQueue();
-        Refresh();
-        Log.d("tttt", "tttt");
-
-
-
-
+        Refresh("1");
     }
 
     @Override
@@ -153,16 +173,24 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
         return true;
     }
 
-    public void Refresh(){
+    public void Refresh(String page){
         refresh.setVisibility(View.GONE);
-        progressBar.setVisibility(View.VISIBLE);
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, Utils.URL, null, new Response.Listener<JSONObject>() {
+        //progressBar.setVisibility(View.VISIBLE);
+        swipeRefreshLayout.setRefreshing(true);
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, Utils.URL+"?p="+page, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject jsonObject) {
-                //Log.d("MainActivity", jsonObject.getString("Data"));
+
+                swipeRefreshLayout.setRefreshing(false);
                 JSONArray array;
                 try {
+                    Log.d("MainActivity", jsonObject.getString("Data"));
                     array = jsonObject.getJSONArray("Data");
+                    try {
+                        next = jsonObject.getJSONObject("Page").getBoolean("Next");
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
 
                     for (int i = 0; i < array.length(); i++) {
                         feedModel mode = new feedModel();
@@ -172,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                             mode.setViewType(array.getJSONObject(i).getString("Type"));
                             mode.setURL(array.getJSONObject(i).getString("File"));
                             mode.setIndex(String.valueOf(i));
-                            if (mode.getViewType().equals("video")) {
+                            if (mode.getViewType().equals("Video")) {
                                 videos.add(mode);
                             }
 
@@ -201,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                                     if (findFirstCompletelyVisibleItemPosition >= 0) {
                                         feed = model.get(findFirstCompletelyVisibleItemPosition);
                                         Log.d(TAG, feed.getTag());
-                                        if (feed.getViewType().equals("video")) {
+                                        if (feed.getViewType().equals("Video")) {
                                             mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
                                             mAdapter.videoPlayerController.handlePlayBack(feed);
                                         }
@@ -209,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                                     } else {
                                         feed = model.get(firstVisiblePosition);
                                         Log.d(TAG, feed.getTag());
-                                        if (feed.getViewType().equals("video")) {
+                                        if (feed.getViewType().equals("Video")) {
                                             mAdapter.videoPlayerController.setcurrentPositionOfItemToPlay(findFirstCompletelyVisibleItemPosition);
                                             mAdapter.videoPlayerController.handlePlayBack(feed);
                                         }

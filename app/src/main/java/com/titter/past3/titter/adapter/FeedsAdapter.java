@@ -11,6 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.titter.past3.titter.R;
@@ -69,6 +70,7 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
                     break;
                 default:
                     img = (NetworkImageView) v.findViewById(R.id.imageView);
+                    progressBar = (ProgressBar) v.findViewById(R.id.loader);
                     break;
             }
             txt = (TextView) v.findViewById(R.id.title);
@@ -96,19 +98,20 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         int Type = IMAGE;
         feedModel mod = model.get(position);
         Typeface robot = Typeface.createFromAsset(context.getAssets(),
                 "fonts/Roboto-Medium.ttf"); //use this.getAssets if you are calling from an Activity
         try{
-            if(mod.getViewType().equals("video")){
+            if(mod.getViewType().equals("Video")){
                 Type = VIDEO;
             }
         }
        catch (Exception ne){
             ne.printStackTrace();
         }
+        Log.d("Adapter", mod.getURL() + "  " + mod.getViewType());
 
         switch (Type){
             case VIDEO:
@@ -119,11 +122,29 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
                 holder.txt.setTypeface(robot);
                 holder.txt.setText(mod.getTag());
                 break;
-            default:
+            case IMAGE:
                 ImageLoader imageLoader = volleySingleton.getsInstance().getImageLoader();
                 //ImageRequest ir = new ImageRequest()
-                Log.d("nulltest", mod.getURL());
-                holder.img.setImageUrl(mod.getURL(), imageLoader);
+                imageLoader.get(mod.getURL(), new ImageLoader.ImageListener() {
+                    @Override
+                    public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                        holder.progressBar.setVisibility(View.GONE);
+                        holder.img.setImageBitmap(imageContainer.getBitmap());
+                    }
+
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+
+                    }
+                });
+                try{
+                    Log.d("nulltest", mod.getViewType());
+                    holder.img.setImageUrl(mod.getURL(), imageLoader);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
                 holder.txt.setTypeface(robot);
                 holder.txt.setText(mod.getTag());
                 break;
@@ -135,14 +156,7 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
 
     @Override
     public int getItemCount() {
-        try{
-            if(model.isEmpty()){
-                return 0;
-            }
-        }catch (NullPointerException npe){
-            npe.getMessage();
-            return 0;
-        }
+
         return model.size();
     }
 
@@ -151,7 +165,7 @@ public class FeedsAdapter extends RecyclerView.Adapter<FeedsAdapter.ViewHolder>{
     public int getItemViewType(int position) {
         feedModel mod = model.get(position);
         try{
-            if(mod.getViewType().equals("video")){
+            if(mod.getViewType().equals("Video")){
                 return 2;
             }
             return 1;

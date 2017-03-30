@@ -35,13 +35,13 @@ public class VideoPlayerController {
     }
 
     public void handlePlayBack(feedModel video){
-       // if(isVideoDownloaded(video)){
+        //if(isVideoDownloaded(getProxy().isCached(video.getURL()), video)){
             Log.d(TAG, "downloaded");
             if(isVideoVisible(video)){
                 Log.d(TAG, "visible");
                 playVideo(video);
             }
-        //}
+       //}
     }
 
     private void playVideo(final feedModel video){
@@ -110,10 +110,11 @@ public class VideoPlayerController {
     }
 
 
-    private boolean isVideoDownloaded(feedModel video) {
-        String isVideoDownloaded = Utils.readPreferences(context, video.getURL());
-        Log.d(TAG, isVideoDownloaded);
-        boolean isVideoAvailable = Boolean.valueOf(isVideoDownloaded);
+    private boolean isVideoDownloaded(Boolean value, feedModel video) {
+        //String isVideoDownloaded = Utils.readPreferences(context, video.getURL());
+        //Log.d(TAG, isVideoDownloaded);
+        //boolean isVideoAvailable = Boolean.valueOf(isVideoDownloaded);
+        boolean isVideoAvailable = value;
         if(isVideoAvailable)
         {
             Log.d(TAG, "available");

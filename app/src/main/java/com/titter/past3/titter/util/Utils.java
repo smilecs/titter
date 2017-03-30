@@ -11,7 +11,7 @@ import com.titter.past3.titter.R;
 public class Utils {
 
     //public static String URL = "http://192.168.43.126:8080/get";
-    public static String URL = "http://titter.herokuapp.com/get";
+    public static String URL = "https://titter.past3.com.ng/api/posts";
 
     public static String readPreferences(Context context, String name){
         SharedPreferences sharedPreferences = context.getSharedPreferences(context.getString(R.string.save), context.MODE_PRIVATE);
