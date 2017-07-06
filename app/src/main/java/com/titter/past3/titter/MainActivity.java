@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.other) {
-            Intent i = new Intent(this, others.class);
+            Intent i = new Intent(this, faq.class);
             startActivity(i);
         }
 

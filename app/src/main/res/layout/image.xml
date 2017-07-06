@@ -12,13 +12,14 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <com.android.volley.toolbox.NetworkImageView
+        <ImageView
             android:layout_width="match_parent"
-            android:layout_height="310dp"
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY"
+            android:minHeight="170dp"
+            android:maxHeight="270dp"
             android:id="@+id/imageView"
-            android:scaleType="centerCrop"
-            android:adjustViewBounds="true"
-            android:layout_alignParentStart="true" />
+             />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -32,10 +33,10 @@
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:indeterminate="true"
-            android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
-            android:id="@+id/loader"/>
+            android:visibility="visible"
+            android:layout_centerVertical="true"
+            android:id="@+id/progressBar4"/>
     </RelativeLayout>
 
 

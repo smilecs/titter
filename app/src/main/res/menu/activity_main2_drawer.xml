@@ -1,20 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:checkableBehavior="single">
-        <item android:id="@+id/home"
-            android:title="HOME"
-            android:icon="@drawable/home"/>
-
-        <item android:id="@+id/invite"
-            android:title="INVITE"
-            android:icon="@drawable/invite"/>
-
         <item android:id="@+id/about"
             android:title="ABOUT US"
-            android:icon="@drawable/about"/>
+            />
 
         <item android:id="@+id/other"
-            android:title="HELP"
-            android:icon="@drawable/help"/>
+            android:title="FAQ"
+            />
     </group>
 </menu>
