@@ -184,10 +184,10 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                 swipeRefreshLayout.setRefreshing(false);
                 JSONArray array;
                 try {
-                    Log.d("MainActivity", jsonObject.getString("Data"));
+                    Log.d("MainActivity", jsonObject.toString());
                     array = jsonObject.getJSONArray("Data");
                     try {
-                        next = jsonObject.getJSONObject("Page").getBoolean("Next");
+                        next = jsonObject.getBoolean("Next");
                     }catch (Exception e){
                         e.printStackTrace();
                     }
