@@ -18,6 +18,7 @@
             android:scaleType="fitXY"
             android:minHeight="170dp"
             android:maxHeight="270dp"
+            android:adjustViewBounds="true"
             android:id="@+id/imageView"
              />
         <TextView

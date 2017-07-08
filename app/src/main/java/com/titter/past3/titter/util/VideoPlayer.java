@@ -110,10 +110,7 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
 
     public boolean startPlay(){
         if(mp!=null){
-            if(!mp.isPlaying()){
-                mp.start();
-                return true;
-            }
+            canPlay();
         }
         return false;
     }
@@ -132,22 +129,27 @@ public class VideoPlayer extends TextureView implements TextureView.SurfaceTextu
         img.setVisibility(VISIBLE);
     }
 
-    public void changePlayState()
+    public boolean canPlay()
     {
-        Log.d(TAG, "state:" + String.valueOf(mp.isPlaying()));
-        if(mp!=null && mp.isPlaying())
-        {
-            mp.pause();
-            img.setVisibility(VISIBLE);
+        if(mp!=null ){
+            Log.d(TAG, "state:" + String.valueOf(mp.isPlaying()));
+            if(mp.isPlaying())
+            {
+                mp.pause();
+                img.setVisibility(VISIBLE);
 
-        }  else {
-            if(this.isAvailable()){
-                img.setVisibility(GONE);
-                //prepareVideo(getSurfaceTexture());
-                mp.start();
+            }  else {
+                if (this.isAvailable()) {
+                    img.setVisibility(GONE);
+                    //prepareVideo(getSurfaceTexture());
+                    mp.start();
+                }
             }
+            return true;
         }
-
+        else {
+            return false;
+        }
     }
 
     public void setOnVideoPreparedListner(IVideoPreparedListener iVideoPreparedListener){

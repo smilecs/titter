@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
     DrawerLayout drawer;
     Context context;
     Button refresh;
-    Boolean next = false;
+    Boolean next = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -269,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
                         }
                         model.add(mode);
                     }
-                    realm.executeTransaction(new Realm.Transaction() {
+                    realm.executeTransactionAsync(new Realm.Transaction() {
                         @Override
                         public void execute(Realm realm) {
                             realm.copyToRealmOrUpdate(model);
@@ -293,6 +293,7 @@ public class MainActivity extends AppCompatActivity implements IVideoDownloadLis
             public void onErrorResponse(VolleyError volleyError) {
                 volleyError.printStackTrace();
                 refresh.setVisibility(View.VISIBLE);
+                swipeRefreshLayout.setRefreshing(false);
                 progressBar.setVisibility(View.GONE);
             }
         });

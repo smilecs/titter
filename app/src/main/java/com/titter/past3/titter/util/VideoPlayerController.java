@@ -52,8 +52,10 @@ public class VideoPlayerController {
     }
 
     public void handlePlayBack(feedModel video){
-        playVideo(video);
-
+        VideoPlayer videoPlayer = videos.get(video.getIndex());
+        if(!videoPlayer.canPlay()){
+            playVideo(video);
+        }
     }
  /*   public void handlePlayBack(feedModel video){
             if(isVideoVisible(video)){
@@ -64,7 +66,7 @@ public class VideoPlayerController {
 
     private void playVideo(final feedModel video){
             Log.d(TAG, "currentplayin no");
-        Log.d(TAG, video.getURL());
+        Log.d(TAG, "size" +" " + String.valueOf(videos.size()));
             if(videos.containsKey(video.getIndex())){
                 Log.d(TAG, "contains yes");
                 final VideoPlayer videoPlayer2 = videos.get(video.getIndex());
@@ -105,6 +107,7 @@ public class VideoPlayerController {
 
             }else {
                     Log.d(TAG, "else");
+
             }
 
 

@@ -62,7 +62,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
         return videoPlayerController;
     }*/
 
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder{
        public ImageView img;
         public VideoPlayer vid;
         public TextView txt;
@@ -85,10 +85,11 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                         @Override
                         public void onClick(View v) {
                             Log.d("Adapter", "clicked");
-                            vid.changePlayState();
+                            if(vidCard.getTag() != null){
+                                videoPlayerController.handlePlayBack((feedModel) vidCard.getTag());
+                            }
                         }
                     });
-
                     break;
                 default:
                     img = (ImageView) v.findViewById(R.id.imageView);
@@ -119,6 +120,7 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
     public void onBindViewHolder(final ViewHolder holder, int position) {
         int Type = IMAGE;
         final feedModel mod = getData().get(position);
+        Log.i("Type", mod.getViewType());
 
         Typeface robot = Typeface.createFromAsset(context.getAssets(),
                 "fonts/Roboto-Medium.ttf"); //use this.getAssets if you are calling from an Activity
@@ -134,11 +136,15 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
         switch (Type){
             case VIDEO:
                 //Uri videoUri = Uri.parse(mod.getURL());
+                final int pos = position;
+                Log.i("Type2", mod.getViewType());
                 videoPlayerController.loadVideo(mod, holder.vid, holder.progressBar, position, holder.ImageRel, holder.videoRel);
                 //holder.vid.setVideoURI(videoUri);
                 //holder.vid.seekTo(holder.vid.getCurrentPosition() + 1000);
                 holder.txt.setTypeface(robot);
                 holder.txt.setText(mod.getTag());
+                holder.ImageRel.setTag(mod);
+                holder.vidCard.setTag(mod);
                 break;
             default:
                 ImageLoader imageLoader = volleySingleton.getsInstance().getImageLoader();
@@ -148,33 +154,36 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             try{
-                                final File file = fileCache.getFile(mod.getURL(), "jpg");
-                               // Log.d("BitmapCount", String.valueOf(bm.getByteCount()));
-                                FileOutputStream outStream = new FileOutputStream(file);
-                                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                                imageContainer.getBitmap().compress(Bitmap.CompressFormat.PNG, 100, stream);
-                                byte[] byteArray = stream.toByteArray();
-                                outStream.write(byteArray, 0, byteArray.length);
-                                Log.d("FeedsAdapter", "UnAvailable");
-                                realm.executeTransaction(new Realm.Transaction() {
-                                    @Override
-                                    public void execute(Realm realm) {
-                                        mod.setURL(file.getAbsolutePath());
-                                        mod.setAvailable("true");
-                                        realm.copyToRealmOrUpdate(mod);
+                                Bitmap bitmap = imageContainer.getBitmap();
+                                if(bitmap != null){
+                                    final File file = fileCache.getFile(mod.getURL(), "jpg");
+                                    // Log.d("BitmapCount", String.valueOf(bm.getByteCount()));
+                                    FileOutputStream outStream = new FileOutputStream(file);
+                                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                    byte[] byteArray = stream.toByteArray();
+                                    outStream.write(byteArray, 0, byteArray.length);
+                                    Log.d("FeedsAdapter", "UnAvailable");
+                                    realm.executeTransaction(new Realm.Transaction() {
+                                        @Override
+                                        public void execute(Realm realm) {
+                                            mod.setURL(file.getAbsolutePath());
+                                            mod.setAvailable("true");
+                                            realm.copyToRealmOrUpdate(mod);
+                                        }
+                                    });
+                                    //holder.img.setAdjustViewBounds(true);
+                                    holder.img.getLayoutParams().height = bitmap.getHeight();
+                                    if(bitmap.getHeight() < 80){
+                                        holder.img.getLayoutParams().height = 280;
                                     }
-                                });
-                                //holder.img.setAdjustViewBounds(true);
-                                holder.img.getLayoutParams().height = imageContainer.getBitmap().getHeight();
-                                if(imageContainer.getBitmap().getHeight() < 80){
-                                    holder.img.getLayoutParams().height = 280;
+                                    holder.progressBar.setVisibility(View.GONE);
+                                    holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));
                                 }
-                                holder.progressBar.setVisibility(View.GONE);
-                                holder.img.setImageDrawable(Drawable.createFromPath(mod.getURL()));
                             }catch (Exception e){
                                 e.printStackTrace();
-                                holder.img.setImageBitmap(imageContainer.getBitmap());
-                                holder.progressBar.setVisibility(View.GONE);
+                               // holder.img.setImageBitmap(imageContainer.getBitmap());
+                               // holder.progressBar.setVisibility(View.GONE);
 
 
                             }
@@ -220,7 +229,8 @@ public class FeedsAdapter extends RealmRecyclerViewAdapter<feedModel, FeedsAdapt
     public int getItemViewType(int position) {
         feedModel mod = getData().get(position);
         try{
-            if(mod.getViewType().equals("video")){
+            if(mod.getViewType().equals((Utils.VIDEOTEXT))){
+                Log.i("Type3", mod.getViewType());
                 return 2;
             }
             return 1;
